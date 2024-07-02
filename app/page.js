@@ -1,13 +1,13 @@
-import Image from "next/image";
-import styles from "./page.module.css";
-import Link from 'next/link'
-import '../firebase/config';
+import './firebaseConfig';
+import UserProfile from "./components/UserProfile";
+import DashboardClient from './components/DashboardClient';
+import { userData, initialSkills } from './mockData';
 
 export default function Home() {
   return (
-    <main className={styles.main}>
-      <h1>hello world</h1>
-      <Link href="/posts">check out some posts</Link>
-    </main>
+    <div className="container">
+      <UserProfile />
+      <DashboardClient />
+    </div>
   );
 }

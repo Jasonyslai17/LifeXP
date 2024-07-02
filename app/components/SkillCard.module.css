@@ -1,0 +1,63 @@
+.card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+}
+
+.streak {
+  margin-left: auto;
+  background-color: #ff6b6b;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.xpInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.level {
+  font-weight: bold;
+}
+
+.removeButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    color: #ff0000;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .header {
+    position: relative;
+  }
+  
+  /* ... rest of your existing styles ... */

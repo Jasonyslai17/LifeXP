@@ -1,0 +1,26 @@
+.emojiPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 300px;
+    margin: 10px 0;
+  }
+  
+  .emojiButton {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 24px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .emojiButton:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .emojiButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+  }

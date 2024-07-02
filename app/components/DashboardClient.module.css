@@ -1,12 +1,12 @@
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
-  
-  .skillsGrid {
+.skillsGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1rem;
     margin-bottom: 1rem;
+  }
+  
+  @media (max-width: 768px) {
+    .skillsGrid {
+      grid-template-columns: 1fr;
+    }
   }

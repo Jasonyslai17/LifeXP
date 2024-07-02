@@ -1,0 +1,13 @@
+/* ProgressBar.module.css */
+.progressBarContainer {
+    width: 100%;
+    background-color: #e0e0e0; /* Grey background */
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progressBar {
+    height: 100%;
+    transition: width 0.5s ease; /* Smooth transition */
+    background-color: #4caf50; /* Green color by default */
+  }
