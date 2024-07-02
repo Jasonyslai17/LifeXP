@@ -195,10 +195,12 @@ export function GlobalStateProvider({ children }) {
       const newMaxXp = getMaxXpForLevel(newLevel);
       
       const now = Timestamp.now();
-      const yesterday = new Timestamp(now.seconds - 86400, now.nanoseconds);
-      const newStreak = skill.lastUpdated && skill.lastUpdated.toDate() > yesterday.toDate()
-        ? (skill.streak || 0) + 1
-        : 1;
+      const lastUpdated = skill.lastUpdated ? skill.lastUpdated.toDate() : null;
+      
+      // Check if the last update was on a different day
+      const isNewDay = lastUpdated ? now.toDate().toDateString() !== lastUpdated.toDateString() : true;
+      
+      const newStreak = isNewDay ? (skill.streak || 0) + 1 : skill.streak || 0;
       
       await updateDoc(doc(db, 'skills', skillId), { 
         xp: newXp, 

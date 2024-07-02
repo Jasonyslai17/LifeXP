@@ -7,9 +7,19 @@ import ProgressBar from './ProgressBar';
 import Button from './Button';
 import { getMaxXpForLevel, calculateLevel, getXpInCurrentLevel } from '../utils/levelCalculation';
 
-export default function SkillCard({ id, name, xp, streak, icon }) {
-  const { updateSkillXp, removeSkill } = useGlobalState();
+export default function SkillCard({ id, name, icon }) {
+  const { state, updateSkillXp, removeSkill } = useGlobalState();
   const [error, setError] = useState(null);
+
+  // Find the current skill data from the global state
+  const skill = state.skills.find(s => s.id === id);
+
+  // If skill is not found, return null or an error message
+  if (!skill) {
+    return <div>Skill not found</div>;
+  }
+
+  const { xp, streak } = skill;
 
   const currentLevel = calculateLevel(xp);
   const currentLevelThreshold = getMaxXpForLevel(currentLevel - 1);
@@ -35,9 +45,6 @@ export default function SkillCard({ id, name, xp, streak, icon }) {
       setError("Failed to remove skill. Please try again.");
     }
   };
-
-  console.log(`Skill: ${name}, XP: ${xp}, Level: ${currentLevel}, MaxXP: ${nextLevelThreshold}`);
-  console.log(`XP in current level: ${xpInCurrentLevel}, XP required for next level: ${xpRequiredForNextLevel}`);
 
   if (error) {
     return (
