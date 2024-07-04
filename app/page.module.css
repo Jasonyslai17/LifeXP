@@ -1,12 +1,99 @@
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
-  
-  .skillsGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+
+.loading {
+text-align: center;
+padding: 40px;
+font-size: 18px;
+color: #666;
+}
+
+.landingPage {
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+}
+
+.heroSection {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 60px 10%;
+background-color: #f0f4f8;
+}
+
+.heroContent {
+flex: 1;
+max-width: 600px;
+}
+
+.headline {
+font-size: 48px;
+color: #333;
+margin-bottom: 20px;
+line-height: 1.2;
+}
+
+.subheadline {
+font-size: 18px;
+color: #666;
+margin-bottom: 30px;
+}
+
+.heroDemo {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.features {
+display: flex;
+justify-content: space-around;
+padding: 60px 10%;
+background-color: #fff;
+}
+
+.feature {
+text-align: center;
+max-width: 300px;
+}
+
+.feature h2 {
+font-size: 24px;
+color: #333;
+margin-bottom: 15px;
+}
+
+.feature p {
+font-size: 16px;
+color: #666;
+}
+
+
+@media (max-width: 768px) {
+.heroSection {
+  flex-direction: column;
+  text-align: center;
+}
+
+.heroContent {
+  margin-bottom: 40px;
+}
+
+.headline {
+  font-size: 36px;
+}
+
+.features {
+  flex-direction: column;
+  align-items: center;
+}
+
+.feature {
+  margin-bottom: 30px;
+}
+}

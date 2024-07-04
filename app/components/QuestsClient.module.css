@@ -1,0 +1,81 @@
+/* components/QuestsClient.module.css */
+.questsPage {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .questsPage h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .createQuestButton {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+  
+  .createQuestButton:hover {
+    background-color: #45a049;
+  }
+  
+  .toggleContainer {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .toggleButton {
+    background-color: #f1f1f1;
+    border: none;
+    color: #333;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .toggleButton:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+  }
+  
+  .toggleButton:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .toggleButton.active {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .questList {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+
+.sortButton {
+background-color: #a4a5a7;
+color: white;
+border: none;
+padding: 0.5em;
+margin-bottom: 15px;
+border-radius: 4px;
+cursor: pointer;
+font-size: 0.7rem;
+transition: background-color 0.3s ease;
+}
+
+.sortButton:hover {
+background-color: #686969;
+}
+  

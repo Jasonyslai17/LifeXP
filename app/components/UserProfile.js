@@ -1,38 +1,61 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useGlobalState } from '../context/GlobalStateContext';
+import { useSession } from 'next-auth/react';
 import styles from './UserProfile.module.css';
 import ProgressBar from './ProgressBar';
-import { getMaxXpForLevel, calculateLevel } from '../utils/levelCalculation';
+import AnimatedNumber from './AnimatedNumber';
+import Confetti from 'react-confetti';
+import { getMaxXpForLevel, calculateLevel, getXpInCurrentLevel } from '../utils/levelCalculation';
 
 export default function UserProfile() {
   const { state } = useGlobalState();
+  const { data: session } = useSession();
   const { user } = state;
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [prevLevel, setPrevLevel] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      const currentLevel = calculateLevel(user.xp);
+      if (prevLevel !== null && currentLevel > prevLevel) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+      setPrevLevel(currentLevel);
+    }
+  }, [user, prevLevel]);
 
   if (!user) {
     return <div>Loading user profile...</div>;
   }
 
-  const currentLevel = user.level;
-  const currentLevelThreshold = getMaxXpForLevel(currentLevel - 1);
-  const nextLevelThreshold = user.maxXp;
-  const xpInCurrentLevel = user.xp - currentLevelThreshold;
-  const xpRequiredForNextLevel = nextLevelThreshold - currentLevelThreshold;
+  const { name, xp, streak } = user;
+  const level = calculateLevel(xp);
+  const xpInCurrentLevel = getXpInCurrentLevel(xp);
+  const xpRequiredForNextLevel = getMaxXpForLevel(level) - getMaxXpForLevel(level - 1);
 
   return (
     <div className={styles.profile}>
-      <div className={styles.avatar}></div>
-      <div className={styles.info}>
-        <h2>{user.name}</h2>
+      {showConfetti && <Confetti />}
+      <div className={styles.header}>
+        <img src={session?.user?.image || '/default-avatar.png'} alt={name} className={styles.avatar} />
+        <div className={styles.nameAndStreak}>
+          <h2>{name}</h2>
+          <span className={styles.streak}>🔥 {streak} </span>
+        </div>
+      </div>
+      <div className={styles.levelDisplay}>
+        <span className={styles.level}>Level <AnimatedNumber number={level} key={level} /></span>
+      </div>
+      <div className={styles.progressContainer}>
+        <span className={styles.xpCurrent}>{xpInCurrentLevel} XP</span>
         <ProgressBar current={xpInCurrentLevel} max={xpRequiredForNextLevel} />
-        <div className={styles.xpInfo}>
-          <span>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</span>
-        </div>
-        <div className={styles.levelInfo}>
-          <span>Level {currentLevel}</span>
-          <br></br>
-          <span>{currentLevelThreshold} XP → {nextLevelThreshold} XP</span>
-        </div>
+        <span className={styles.xpRequired}>{xpRequiredForNextLevel} XP</span>
+      </div>
+      <div className={styles.totalXp}>
+        <span>Total XP: {xp}</span>
       </div>
     </div>
   );

@@ -5,44 +5,97 @@ import { useGlobalState } from '../context/GlobalStateContext';
 import styles from './SkillCard.module.css';
 import ProgressBar from './ProgressBar';
 import Button from './Button';
-import { getMaxXpForLevel, calculateLevel, getXpInCurrentLevel } from '../utils/levelCalculation';
+import { calculateLevel, getXpInCurrentLevel, getXpRequiredForNextLevel } from '../utils/levelCalculation';
+import AnimatedNumber from './AnimatedNumber';
+import Confetti from 'react-confetti';
+import EmojiPicker from './EmojiPicker';
+import ConfirmationModal from './ConfirmationModal';
 
 export default function SkillCard({ id, name, icon }) {
-  const { state, updateSkillXp, removeSkill } = useGlobalState();
+  const { state, updateSkillXp, removeSkill, updateSkill } = useGlobalState();
   const [error, setError] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [prevLevel, setPrevLevel] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(name);
+  const [editIcon, setEditIcon] = useState(icon);
+  const [showRemoveConfirmation, setShowRemoveConfirmation] = useState(false);
+  const [windowDimensions, setWindowDimensions] = useState({ width: 0, height: 0 });
 
-  // Find the current skill data from the global state
   const skill = state.skills.find(s => s.id === id);
 
-  // If skill is not found, return null or an error message
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    }
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (skill) {
+      const currentLevel = calculateLevel(skill.xp);
+      if (prevLevel !== null && currentLevel > prevLevel) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
+      }
+      setPrevLevel(currentLevel);
+    }
+  }, [skill, prevLevel]);
+
   if (!skill) {
-    return <div>Skill not found</div>;
+    return <div>Loading skill data...</div>;
   }
 
   const { xp, streak } = skill;
-
-  const currentLevel = calculateLevel(xp);
-  const currentLevelThreshold = getMaxXpForLevel(currentLevel - 1);
-  const nextLevelThreshold = getMaxXpForLevel(currentLevel);
-  const xpInCurrentLevel = xp - currentLevelThreshold;
-  const xpRequiredForNextLevel = nextLevelThreshold - currentLevelThreshold;
+  const level = calculateLevel(xp);
+  const xpInCurrentLevel = getXpInCurrentLevel(xp);
+  const xpRequiredForNextLevel = getXpRequiredForNextLevel(xp);
 
   const handleAddHour = async () => {
+    setIsUpdating(true);
     try {
-      await updateSkillXp(id, 1); // 1 hour = 1 XP
+      await updateSkillXp(id, 1);
       setError(null);
     } catch (err) {
       console.error("Error adding hour:", err);
       setError("Failed to update skill. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleRemoveSkill = async () => {
+  const handleRemoveClick = () => {
+    setShowRemoveConfirmation(true);
+  };
+
+  const handleConfirmRemove = async () => {
     try {
       await removeSkill(id);
+      setShowRemoveConfirmation(false);
     } catch (err) {
       console.error("Error removing skill:", err);
       setError("Failed to remove skill. Please try again.");
+    }
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await updateSkill(id, { name: editName, icon: editIcon });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating skill:", err);
+      setError("Failed to update skill. Please try again.");
     }
   };
 
@@ -57,25 +110,63 @@ export default function SkillCard({ id, name, icon }) {
 
   return (
     <div className={styles.card}>
-      <div className={styles.header}>
-        <span className={styles.icon}>{icon}</span>
-        <h3>{name}</h3>
-        <button onClick={handleRemoveSkill} className={styles.removeButton}>X</button>
-      </div>
-      <ProgressBar current={xpInCurrentLevel} max={xpRequiredForNextLevel} />
-      <div className={styles.levelInfo}>
-        <span>Level {currentLevel}</span>
-        <br />
-        <span>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</span>
-        <br />
-        <span>{currentLevelThreshold} XP → {nextLevelThreshold} XP</span>
-      </div>
-      <div className={styles.streakInfo}>
-        Streak: {streak} day{streak !== 1 ? 's' : ''}
-      </div>
-      <div className={styles.footer}>
-        <Button variant="secondary" onClick={handleAddHour}>+ hour</Button>
-      </div>
+      {showConfetti && (
+        <Confetti
+          width={windowDimensions.width}
+          height={windowDimensions.height}
+          recycle={false}
+          numberOfPieces={200}
+        />
+      )}
+      {isEditing ? (
+        <div className={styles.editMode}>
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            className={styles.editInput}
+          />
+          <EmojiPicker onSelect={setEditIcon} selectedEmoji={editIcon} />
+          <Button onClick={handleSaveEdit}>Save</Button>
+          <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+        </div>
+      ) : (
+        <>
+          <div className={styles.header}>
+            <span className={styles.icon}>{icon}</span>
+            <div className={styles.nameAndStreak}>
+              <h3>{name}</h3>
+              <span className={styles.streak}>🔥 {streak} </span>
+            </div>
+            <button onClick={handleEdit} className={styles.editButton}>✏️</button>
+            <button onClick={handleRemoveClick} className={styles.removeButton}>X</button>
+          </div>
+          <div className={styles.levelDisplay}>
+            <span className={styles.level}>Level <AnimatedNumber number={level} key={level} /></span>
+          </div>
+          <div className={styles.progressContainer}>
+            <span className={styles.xpCurrent}>{xpInCurrentLevel} XP</span>
+            <ProgressBar current={xpInCurrentLevel} max={xpRequiredForNextLevel} />
+            <span className={styles.xpRequired}>{xpRequiredForNextLevel} XP</span>
+          </div>
+          <div className={styles.footer}>
+            <Button 
+              variant="secondary" 
+              onClick={handleAddHour} 
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Updating...' : '+ hour'}
+            </Button>
+          </div>
+        </>
+      )}
+      {showRemoveConfirmation && (
+        <ConfirmationModal
+          message="Are you sure you want to remove this skill?"
+          onConfirm={handleConfirmRemove}
+          onCancel={() => setShowRemoveConfirmation(false)}
+        />
+      )}
     </div>
   );
 }

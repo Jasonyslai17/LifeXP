@@ -1,0 +1,58 @@
+.loading {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #666;
+  }
+  
+  .loggedIn {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .userName {
+    flex-grow: 1;
+    font-weight: bold;
+  }
+  
+  .signOutButton {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .loggedOut {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .signInButton {
+    display: inline-flex;
+    align-items: center;
+    background-color: #9e9b93;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .buttonIcon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+  }

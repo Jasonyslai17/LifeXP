@@ -21,7 +21,7 @@ export default function DashboardClient() {
   };
 
   if (state.loading) {
-    return <div>Loading...</div>;
+    return <div>Loading dashboard...</div>;
   }
 
   if (state.error) {
@@ -39,11 +39,6 @@ export default function DashboardClient() {
           <div>No skills added yet. Start by adding a new skill!</div>
         )}
       </div>
-      {isAddingSkill ? (
-        <AddSkillForm onAddSkill={handleAddSkill} onCancel={() => setIsAddingSkill(false)} />
-      ) : (
-        <BuildNewSkillButton onClick={handleBuildNewSkill} />
-      )}
     </>
   );
 }
