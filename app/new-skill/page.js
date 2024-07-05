@@ -16,8 +16,14 @@ export default function NewSkill() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (name && icon) {
-      await addSkill({ name, icon });
-      router.push('/');
+      try {
+        await addSkill({ name, icon });
+        router.push('/');
+      } catch (error) {
+        console.error("Failed to add skill:", error);
+        // Show an error message to the user
+        // You might want to add a state variable for error messages and display it in the UI
+      }
     }
   };
 

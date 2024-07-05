@@ -215,6 +215,9 @@ export function GlobalStateProvider({ children }) {
 
   const addSkill = async (newSkill) => {
     try {
+      if (!state.user || !state.user.id) {
+        throw new Error("User not authenticated");
+      }
       const skillRef = doc(collection(db, 'skills'));
       const skillData = { 
         ...newSkill, 
@@ -231,6 +234,7 @@ export function GlobalStateProvider({ children }) {
     } catch (error) {
       console.error("Error adding skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error; // Re-throw the error to be caught by the component
     }
   };
 
