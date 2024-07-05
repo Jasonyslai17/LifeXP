@@ -33,39 +33,41 @@ export default function Home() {
   return (
     <div className={styles.landingPage}>
       <Navbar />
-      <div className={styles.heroSection}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.headline}>
-            Track Your Growth, Celebrate Your Progress
-          </h1>
-          <p className={styles.subheadline}>
-            LifeXP turns your daily efforts into tangible achievements. 
-            Watch your skills level up as you invest time in what matters to you.
-          </p>
-          <Login buttonText="Level up now" />
+      <main className={styles.mainContent}>
+        <div className={styles.heroSection}>
+          <div className={styles.heroContent}>
+            <h1 className={styles.headline}>
+              Level Up in Real Life.
+            </h1>
+            <p className={styles.subheadline}>
+            Gamify your personal growth.
+            Grow your skill and make it addictive.
+            </p>
+            <Login buttonText="Level up now" classname={styles.loginButton} />
+          </div>
+          <div className={styles.heroDemo}>
+            <ExampleSkillCard />
+          </div>
         </div>
-        <div className={styles.heroDemo}>
-          <ExampleSkillCard />
+        <div className={styles.features}>
+          <div className={styles.feature}>
+            <span className={styles.featureEmoji}>📊</span>
+            <h2>Visualize Progress</h2>
+            <p>See your skills grow with intuitive progress bars and level indicators.</p>
+          </div>
+          <div className={styles.feature}>
+            <span className={styles.featureEmoji}>⛰️</span>
+            <h2>Stay Motivated</h2>
+            <p>Maintain streaks and earn XP to keep you engaged in your personal development.</p>
+          </div>
+          <div className={styles.feature}>
+            <span className={styles.featureEmoji}>⚔️</span>
+            <h2>Customize Your Journey</h2>
+            <p>Create and complete quests to accelerate your levelling up journey.</p>
+          </div>
         </div>
-      </div>
-      <div className={styles.features}>
-      <div className={styles.feature}>
-        <span className={styles.featureEmoji}>📊</span>
-        <h2>Visualize Progress</h2>
-        <p>See your skills grow with intuitive progress bars and level indicators.</p>
-      </div>
-      <div className={styles.feature}>
-        <span className={styles.featureEmoji}>🔥</span>
-        <h2>Stay Motivated</h2>
-        <p>Maintain streaks and earn XP to keep you engaged in your personal development.</p>
-      </div>
-      <div className={styles.feature}>
-        <span className={styles.featureEmoji}>🎨</span>
-        <h2>Customize Your Journey</h2>
-        <p>Add and track skills that matter to you, from coding to cooking and beyond.</p>
-      </div>
-      <Footer />
-</div>
+      </main>
+      <Footer isVisible={true} />
     </div>
   );
 }

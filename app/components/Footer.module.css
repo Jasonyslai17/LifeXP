@@ -1,20 +1,31 @@
 .footer {
-    background-color: #f0f4f8;
-    padding: 20px 0;
-    text-align: center;
-  }
-  
-  .socialIcons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
-  
-  .socialLink {
-    text-decoration: none;
-  }
-  
-  .icon {
-    width: 24px;
-    height: 24px;
-  }
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 1rem;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.logo {
+  height: 30px;
+  width: auto;
+}

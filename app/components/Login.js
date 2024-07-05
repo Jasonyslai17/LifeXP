@@ -18,7 +18,6 @@ export default function Login({ buttonText = "Level up now" }) {
   return (
     <div className={styles.loggedOut}>
       <button onClick={() => signIn("google")} className={styles.signInButton}>
-        <img src="/game-controller-icon.svg" alt="Game Controller" className={styles.buttonIcon} />
         {buttonText}
       </button>
     </div>

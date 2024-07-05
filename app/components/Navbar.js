@@ -8,6 +8,9 @@ export default function Navbar() {
         <img src="/LifeXP.png" alt="LifeXP Logo" className={styles.logo} />
         <span className={styles.logoText}>LifeXP</span>
       </div>
+      <a href="https://insigh.to/b/lifexp" className={styles.feedbackButton}>
+      💬 feedback?
+      </a>
     </nav>
   );
 }

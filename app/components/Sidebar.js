@@ -21,6 +21,11 @@ export default function Sidebar() {
             <span className={styles.icon}>👤</span> Profile
           </Link>
         </li>
+        <li>
+          <a href="https://insigh.to/b/lifexp" className={styles.feedbackLink}>
+            <span className={styles.icon}>💬</span> Feedback?
+          </a>
+        </li>
       </ul>
     </nav>
   );

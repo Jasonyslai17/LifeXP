@@ -40,17 +40,28 @@
   }
   
   .signInButton {
-    display: inline-flex;
-    align-items: center;
-    background-color: #9e9b93;
-    color: white;
-    border: none;
+    display: inline-block;
     padding: 10px 20px;
-    border-radius: 4px;
+    background-color: #4caf50;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
   }
   
+  .signInButton:hover {
+    background-color: #3f9742;
+    transform: translateY(-2px);
+  }
+  
+  .signInButton:active {
+    transform: translateY(0);
+  }
+
   .buttonIcon {
     width: 18px;
     height: 18px;
