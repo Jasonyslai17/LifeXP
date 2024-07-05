@@ -36,7 +36,7 @@ export default function LevelUpFeedback({ level }) {
       />
       <div className={styles.levelUpMessage}>
         <h2>Level Up!</h2>
-        <p>You've reached level {level}</p>
+        <p>You&apos;ve reached level {level}</p>
       </div>
     </div>
   );

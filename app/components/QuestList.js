@@ -60,5 +60,6 @@ const QuestList = React.memo(({ quests, onCompleteQuest, onRemoveQuest, onEditQu
     </div>
   );
 });
+QuestList.displayName = 'QuestList';
 
 export default QuestList;
