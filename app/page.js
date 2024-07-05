@@ -21,11 +21,21 @@ export default function Home() {
     setIsFirstLoad(false);
   }, []);
 
+  useEffect(() => {
+    console.log("Page state:", state);
+    console.log("Session status:", status);
+    console.log("Session data:", session);
+  }, [state, status, session]);
+
   if (status === "loading" || state.loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
 
-  if (isFirstLoad) {
+  if (state.error) {
+    return <div className={styles.error}>Error: {state.error}</div>;
+  }
+
+  if (isFirstLoad || status === "unauthenticated" || !state.user) {
     return (
       <div className={styles.landingPage}>
         <Navbar />
@@ -81,44 +91,5 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className={styles.landingPage}>
-      <Navbar />
-      <main className={styles.mainContent}>
-        <div className={styles.heroSection}>
-          <div className={styles.heroContent}>
-            <h1 className={styles.headline}>
-              Level Up in Real Life.
-            </h1>
-            <p className={styles.subheadline}>
-              Gamify your personal growth.
-              Grow your skills and make it addictive.
-            </p>
-            <Login buttonText="Level up now" classname={styles.loginButton} />
-          </div>
-          <div className={styles.heroDemo}>
-            <ExampleSkillCard />
-          </div>
-        </div>
-        <div className={styles.features}>
-          <div className={styles.feature}>
-            <span className={styles.featureEmoji}>📊</span>
-            <h2>Visualize Progress</h2>
-            <p>See your skills grow with intuitive progress bars and level indicators.</p>
-          </div>
-          <div className={styles.feature}>
-            <span className={styles.featureEmoji}>⛰️</span>
-            <h2>Stay Motivated</h2>
-            <p>Maintain streaks and earn XP to keep you engaged in your personal development.</p>
-          </div>
-          <div className={styles.feature}>
-            <span className={styles.featureEmoji}>⚔️</span>
-            <h2>Customize Your Journey</h2>
-            <p>Create and complete quests to accelerate your levelling up journey.</p>
-          </div>
-        </div>
-      </main>
-      <Footer isVisible={true} />
-    </div>
-  );
+  return <div className={styles.loading}>Something went wrong. Please try again.</div>;
 }

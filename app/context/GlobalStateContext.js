@@ -157,62 +157,69 @@ export function GlobalStateProvider({ children }) {
         if (!firebaseUser) {
           // If NextAuth is authenticated but Firebase is not, sign in to Firebase
           try {
+            if (!session.accessToken) {
+              console.error("No access token available in session");
+              dispatch({ type: ActionTypes.SET_ERROR, payload: "Authentication error: No access token available" });
+              return;
+            }
             const credential = GoogleAuthProvider.credential(null, session.accessToken);
             await signInWithCredential(auth, credential);
             console.log("Signed in to Firebase with credential");
           } catch (error) {
             console.error("Error signing in to Firebase:", error);
-          }
-        } else {
-          console.log("Initializing user...");
-          dispatch({ type: ActionTypes.SET_LOADING, payload: true });
-          dispatch({ type: ActionTypes.CLEAR_ERROR });
-  
-          try {
-            const userDocRef = doc(db, 'users', firebaseUser.uid);
-            const userDoc = await getDoc(userDocRef);
-  
-            let userData;
-            if (!userDoc.exists()) {
-              console.log("User document doesn't exist, creating new user...");
-              userData = {
-                id: firebaseUser.uid,
-                name: firebaseUser.displayName,
-                email: firebaseUser.email,
-                xp: 0,
-                level: 1,
-                maxXp: getMaxXpForLevel(1),
-                streak: 0,
-                lastUpdated: Timestamp.now()
-              };
-              await setDoc(userDocRef, userData);
-            } else {
-              console.log("User document exists, fetching data...");
-              userData = userDoc.data();
-            }
-  
-            dispatch({ type: ActionTypes.SET_USER, payload: userData });
-  
-            const skillsQuery = query(collection(db, 'skills'), where('userId', '==', firebaseUser.uid));
-            const skillsSnapshot = await getDocs(skillsQuery);
-            const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
-            const questsQuery = query(collection(db, 'quests'), where('userId', '==', firebaseUser.uid));
-            const questsSnapshot = await getDocs(questsQuery);
-            const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
-            dispatch({ 
-              type: ActionTypes.SET_INITIAL_STATE, 
-              payload: { user: userData, skills: skills, quests: quests, loading: false }
-            });
-  
-            console.log("User initialized successfully");
-          } catch (error) {
-            console.error("Error initializing user:", error);
             dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
-          } finally {
-            dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+            return;
           }
+        }
+        
+        console.log("Initializing user...");
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
+        dispatch({ type: ActionTypes.CLEAR_ERROR });
+  
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDoc = await getDoc(userDocRef);
+  
+          let userData;
+          if (!userDoc.exists()) {
+            console.log("User document doesn't exist, creating new user...");
+            userData = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName,
+              email: firebaseUser.email,
+              xp: 0,
+              level: 1,
+              maxXp: getMaxXpForLevel(1),
+              streak: 0,
+              lastUpdated: Timestamp.now()
+            };
+            await setDoc(userDocRef, userData);
+          } else {
+            console.log("User document exists, fetching data...");
+            userData = userDoc.data();
+          }
+  
+          dispatch({ type: ActionTypes.SET_USER, payload: userData });
+  
+          const skillsQuery = query(collection(db, 'skills'), where('userId', '==', firebaseUser.uid));
+          const skillsSnapshot = await getDocs(skillsQuery);
+          const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          const questsQuery = query(collection(db, 'quests'), where('userId', '==', firebaseUser.uid));
+          const questsSnapshot = await getDocs(questsQuery);
+          const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          dispatch({ 
+            type: ActionTypes.SET_INITIAL_STATE, 
+            payload: { user: userData, skills: skills, quests: quests, loading: false }
+          });
+  
+          console.log("User initialized successfully");
+        } catch (error) {
+          console.error("Error initializing user:", error);
+          dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+        } finally {
+          dispatch({ type: ActionTypes.SET_LOADING, payload: false });
         }
       } else if (status === "unauthenticated") {
         dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });

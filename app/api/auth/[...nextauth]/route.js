@@ -15,10 +15,9 @@ export const authOptions = {
     async signIn({ user, account, profile, email, credentials }) {
       if (account.provider === "google") {
         const auth = getAuth(app);
-        const credential = GoogleAuthProvider.credential(account.id_token);
+        const credential = GoogleAuthProvider.credential(account.id_token, account.access_token);
         try {
           const result = await signInWithCredential(auth, credential);
-          // Ensure the user is set in Firebase
           if (result.user) {
             console.log("Firebase user set:", result.user);
           }
@@ -29,7 +28,7 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (session?.user) {
         session.user.id = token.sub;
         session.accessToken = token.accessToken;
