@@ -12,12 +12,15 @@ import { getMaxXpForLevel, calculateLevel, getXpInCurrentLevel } from '../utils/
 export default function UserProfile() {
   const { state } = useGlobalState();
   const { data: session } = useSession();
-  const { user } = state;
+  const { user, loading } = state;
   const [showConfetti, setShowConfetti] = useState(false);
   const [prevLevel, setPrevLevel] = useState(null);
 
   useEffect(() => {
     console.log("UserProfile state:", state);
+  }, [state]);
+
+  useEffect(() => {
     if (user) {
       const currentLevel = calculateLevel(user.xp);
       if (prevLevel !== null && currentLevel > prevLevel) {
@@ -28,8 +31,12 @@ export default function UserProfile() {
     }
   }, [user, prevLevel]);
 
-  if (!user) {
+  if (loading) {
     return <div>Loading user profile...</div>;
+  }
+
+  if (!user) {
+    return <div>User not found. Please log in.</div>;
   }
 
   const { name, xp, streak } = user;

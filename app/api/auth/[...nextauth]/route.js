@@ -32,8 +32,15 @@ export const authOptions = {
     async session({ session, token, user }) {
       if (session?.user) {
         session.user.id = token.sub;
+        session.accessToken = token.accessToken;
       }
       return session;
+    },
+    async jwt({ token, account }) {
+      if (account) {
+        token.accessToken = account.access_token;
+      }
+      return token;
     },
   },
   // Add this to ensure proper handling of CSRF Token
