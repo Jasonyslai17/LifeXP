@@ -1,9 +1,8 @@
-// pages/api/auth/[...nextauth].js
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
 import { getAuth } from "firebase/auth";
-import { app } from "../../../firebaseConfig";
+import { app } from "@/app/firebaseConfig";  // Adjust this import path as needed
 
 export const authOptions = {
   providers: [
@@ -33,6 +32,10 @@ export const authOptions = {
       return session;
     },
   },
+  // Add this to ensure proper handling of CSRF Token
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-export default NextAuth(authOptions);
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
