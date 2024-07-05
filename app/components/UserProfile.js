@@ -17,6 +17,7 @@ export default function UserProfile() {
   const [prevLevel, setPrevLevel] = useState(null);
 
   useEffect(() => {
+    console.log("UserProfile state:", state);
     if (user) {
       const currentLevel = calculateLevel(user.xp);
       if (prevLevel !== null && currentLevel > prevLevel) {

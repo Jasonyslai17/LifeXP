@@ -14,6 +14,7 @@ export default function AddSkillForm({ onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("AddSkillForm state before adding skill:", state);
     if (!name.trim()) {
       setError('Please enter a skill name');
       return;

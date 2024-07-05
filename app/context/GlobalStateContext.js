@@ -148,7 +148,7 @@ export function GlobalStateProvider({ children }) {
   useEffect(() => {
     console.log("Session status:", status);
     console.log("Session data:", session);
-
+  
     const auth = getAuth(app);
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log("Firebase Auth state changed:", firebaseUser);
@@ -157,11 +157,11 @@ export function GlobalStateProvider({ children }) {
         console.log("Initializing user...");
         dispatch({ type: ActionTypes.SET_LOADING, payload: true });
         dispatch({ type: ActionTypes.CLEAR_ERROR });
-
+  
         try {
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userDocRef);
-
+  
           let userData;
           if (!userDoc.exists()) {
             console.log("User document doesn't exist, creating new user...");
@@ -180,20 +180,22 @@ export function GlobalStateProvider({ children }) {
             console.log("User document exists, fetching data...");
             userData = userDoc.data();
           }
-
+  
+          dispatch({ type: ActionTypes.SET_USER, payload: userData });
+  
           const skillsQuery = query(collection(db, 'skills'), where('userId', '==', firebaseUser.uid));
           const skillsSnapshot = await getDocs(skillsQuery);
           const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+  
           const questsQuery = query(collection(db, 'quests'), where('userId', '==', firebaseUser.uid));
           const questsSnapshot = await getDocs(questsQuery);
           const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+  
           dispatch({ 
             type: ActionTypes.SET_INITIAL_STATE, 
             payload: { user: userData, skills: skills, quests: quests, loading: false }
           });
-
+  
           console.log("User initialized successfully");
         } catch (error) {
           console.error("Error initializing user:", error);
@@ -205,7 +207,7 @@ export function GlobalStateProvider({ children }) {
         dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });
       }
     });
-
+  
     return () => unsubscribe();
   }, [status, session]);
 

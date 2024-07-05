@@ -17,7 +17,11 @@ export const authOptions = {
         const auth = getAuth(app);
         const credential = GoogleAuthProvider.credential(account.id_token);
         try {
-          await signInWithCredential(auth, credential);
+          const result = await signInWithCredential(auth, credential);
+          // Ensure the user is set in Firebase
+          if (result.user) {
+            console.log("Firebase user set:", result.user);
+          }
         } catch (error) {
           console.error("Error signing in with Firebase:", error);
           return false;
