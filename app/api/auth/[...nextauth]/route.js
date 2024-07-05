@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
 import { getAuth } from "firebase/auth";
-import { app } from "@/app/firebaseConfig";  // Adjust this import path as needed
+import { app } from "@/app/firebaseConfig";
 
 export const authOptions = {
   providers: [
@@ -28,21 +28,17 @@ export const authOptions = {
       }
       return true;
     },
-    async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.sub;
-        session.accessToken = token.accessToken;
-      }
-      return session;
-    },
     async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
       }
       return token;
     },
+    async session({ session, token }) {
+      session.accessToken = token.accessToken;
+      return session;
+    },
   },
-  // Add this to ensure proper handling of CSRF Token
   secret: process.env.NEXTAUTH_SECRET,
 };
 

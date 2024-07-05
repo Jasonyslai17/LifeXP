@@ -91,5 +91,10 @@ export default function Home() {
     );
   }
 
-  return <div className={styles.loading}>Something went wrong. Please try again.</div>;
+  // If authenticated but global state is not set, show loading
+  if (status === "authenticated" && !state.user) {
+    return <div className={styles.loading}>Initializing user data...</div>;
+  }
+
+  return <div className={styles.error}>Something went wrong. Please try again.</div>;
 }
