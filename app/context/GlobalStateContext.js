@@ -15,8 +15,8 @@ import {
   where, 
   Timestamp 
 } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { db } from '../firebaseConfig';
+import { getAuth, onAuthStateChanged, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { db, app } from '../firebaseConfig';
 import { calculateLevel, getMaxXpForLevel } from '../utils/levelCalculation';
 
 // Initial state
@@ -41,6 +41,7 @@ const ActionTypes = {
   REMOVE_SKILL: 'REMOVE_SKILL',
   SET_LOADING: 'SET_LOADING',
   SET_ERROR: 'SET_ERROR',
+  CLEAR_ERROR: 'CLEAR_ERROR',
   SET_QUESTS: 'SET_QUESTS',
   ADD_QUEST: 'ADD_QUEST',
   COMPLETE_QUEST: 'COMPLETE_QUEST',
@@ -101,6 +102,8 @@ function reducer(state, action) {
       return { ...state, loading: action.payload };
     case ActionTypes.SET_ERROR:
       return { ...state, error: action.payload };
+    case ActionTypes.CLEAR_ERROR:
+      return { ...state, error: null };
     case ActionTypes.SET_QUESTS:
       return { ...state, quests: action.payload };
     case ActionTypes.ADD_QUEST:
@@ -146,78 +149,65 @@ export function GlobalStateProvider({ children }) {
     console.log("Session status:", status);
     console.log("Session data:", session);
 
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log("Firebase Auth: User is signed in", user);
-      } else {
-        console.log("Firebase Auth: No user is signed in");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [session, status]);
-
-  useEffect(() => {
-    const initializeUser = async () => {
-      if (session?.user?.id && status === "authenticated") {
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("Firebase Auth state changed:", firebaseUser);
+      
+      if (firebaseUser && status === "authenticated") {
         console.log("Initializing user...");
         dispatch({ type: ActionTypes.SET_LOADING, payload: true });
-        
-        const userDocRef = doc(db, 'users', session.user.id);
-        
+        dispatch({ type: ActionTypes.CLEAR_ERROR });
+
         try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userDocRef);
+
           let userData;
           if (!userDoc.exists()) {
             console.log("User document doesn't exist, creating new user...");
-            userData = { 
-              id: session.user.id, 
-              name: session.user.name, 
-              email: session.user.email,
-              xp: 0, 
-              level: 1, 
+            userData = {
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName,
+              email: firebaseUser.email,
+              xp: 0,
+              level: 1,
               maxXp: getMaxXpForLevel(1),
               streak: 0,
               lastUpdated: Timestamp.now()
             };
             await setDoc(userDocRef, userData);
-            console.log("New user created:", userData);
           } else {
             console.log("User document exists, fetching data...");
             userData = userDoc.data();
-            console.log("User data fetched:", userData);
           }
 
-          // Fetch skills
-          const skillsQuery = query(collection(db, 'skills'), where('userId', '==', session.user.id));
+          const skillsQuery = query(collection(db, 'skills'), where('userId', '==', firebaseUser.uid));
           const skillsSnapshot = await getDocs(skillsQuery);
           const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          console.log("Skills loaded:", skills);
 
-          // Fetch quests
-          const questsQuery = query(collection(db, 'quests'), where('userId', '==', session.user.id));
+          const questsQuery = query(collection(db, 'quests'), where('userId', '==', firebaseUser.uid));
           const questsSnapshot = await getDocs(questsQuery);
           const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          console.log("Quests loaded:", quests);
 
-          // Set initial state with user, skills, and quests data
           dispatch({ 
             type: ActionTypes.SET_INITIAL_STATE, 
             payload: { user: userData, skills: skills, quests: quests, loading: false }
           });
 
+          console.log("User initialized successfully");
         } catch (error) {
           console.error("Error initializing user:", error);
           dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
         } finally {
           dispatch({ type: ActionTypes.SET_LOADING, payload: false });
         }
+      } else {
+        dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });
       }
-    };
+    });
 
-    initializeUser();
-  }, [session, status]);
+    return () => unsubscribe();
+  }, [status, session]);
 
   useEffect(() => {
     console.log("Current state:", state);
@@ -495,6 +485,10 @@ export function GlobalStateProvider({ children }) {
     }
   };
 
+  const clearError = () => {
+    dispatch({ type: ActionTypes.CLEAR_ERROR });
+  };
+
   const value = {
     state,
     dispatch,
@@ -507,7 +501,8 @@ export function GlobalStateProvider({ children }) {
     addQuest,
     updateQuest,
     removeQuest,
-    completeQuest
+    completeQuest,
+    clearError
   };
 
   return (

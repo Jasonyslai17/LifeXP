@@ -1,5 +1,9 @@
+// pages/api/auth/[...nextauth].js
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { getAuth } from "firebase/auth";
+import { app } from "../../../firebaseConfig";
 
 export const authOptions = {
   providers: [
@@ -10,7 +14,16 @@ export const authOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
-      // You can add custom logic here if needed
+      if (account.provider === "google") {
+        const auth = getAuth(app);
+        const credential = GoogleAuthProvider.credential(account.id_token);
+        try {
+          await signInWithCredential(auth, credential);
+        } catch (error) {
+          console.error("Error signing in with Firebase:", error);
+          return false;
+        }
+      }
       return true;
     },
     async session({ session, token, user }) {
@@ -20,10 +33,6 @@ export const authOptions = {
       return session;
     },
   },
-  // Remove the debug option for production
-  // debug: process.env.NODE_ENV === 'development',
 };
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+export default NextAuth(authOptions);
