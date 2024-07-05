@@ -35,7 +35,7 @@ export default function Home() {
     return <div className={styles.error}>Error: {state.error}</div>;
   }
 
-  if (isFirstLoad || status === "unauthenticated" || (!state.user && status !== "authenticated")) {
+  if (isFirstLoad || status === "unauthenticated" || !state.user) {
     return (
       <div className={styles.landingPage}>
         <Navbar />
@@ -89,11 +89,6 @@ export default function Home() {
         </Link>
       </div>
     );
-  }
-
-  // If authenticated but global state is not set, show loading
-  if (status === "authenticated" && !state.user) {
-    return <div className={styles.loading}>Initializing user data...</div>;
   }
 
   return <div className={styles.error}>Unexpected state. Please try logging out and in again.</div>;

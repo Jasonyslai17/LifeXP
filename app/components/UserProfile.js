@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useGlobalState } from '../context/GlobalStateContext';
 import { useSession } from 'next-auth/react';
+import { useGlobalState } from '../context/GlobalStateContext';
 import styles from './UserProfile.module.css';
 import ProgressBar from './ProgressBar';
 import AnimatedNumber from './AnimatedNumber';
@@ -10,9 +10,9 @@ import Confetti from 'react-confetti';
 import { getMaxXpForLevel, calculateLevel, getXpInCurrentLevel } from '../utils/levelCalculation';
 
 export default function UserProfile() {
-  const { state } = useGlobalState();
   const { data: session } = useSession();
-  const { user, loading } = state;
+  const { state } = useGlobalState();
+  const { user } = state;
   const [showConfetti, setShowConfetti] = useState(false);
   const [prevLevel, setPrevLevel] = useState(null);
 
@@ -31,12 +31,8 @@ export default function UserProfile() {
     }
   }, [user, prevLevel]);
 
-  if (loading) {
-    return <div>Loading user profile...</div>;
-  }
-
   if (!user) {
-    return <div>User not found. Please log in.</div>;
+    return <div>Loading user profile...</div>;
   }
 
   const { name, xp, streak } = user;
