@@ -35,7 +35,7 @@ export default function Home() {
     return <div className={styles.error}>Error: {state.error}</div>;
   }
 
-  if (isFirstLoad || status === "unauthenticated" || !state.user) {
+  if (isFirstLoad || status === "unauthenticated" || (!state.user && status !== "authenticated")) {
     return (
       <div className={styles.landingPage}>
         <Navbar />
@@ -96,5 +96,5 @@ export default function Home() {
     return <div className={styles.loading}>Initializing user data...</div>;
   }
 
-  return <div className={styles.error}>Something went wrong. Please try again.</div>;
+  return <div className={styles.error}>Unexpected state. Please try logging out and in again.</div>;
 }

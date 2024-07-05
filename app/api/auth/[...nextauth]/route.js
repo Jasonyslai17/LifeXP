@@ -13,6 +13,7 @@ export const authOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
+      console.log("Sign In Callback - Account:", account);
       if (account.provider === "google") {
         const auth = getAuth(app);
         const credential = GoogleAuthProvider.credential(account.id_token, account.access_token);
@@ -28,17 +29,20 @@ export const authOptions = {
       }
       return true;
     },
-    async jwt({ token, account }) {
+    async jwt({ token, account, user }) {
+      console.log("JWT Callback - Token:", token, "Account:", account, "User:", user);
       if (account) {
         token.accessToken = account.access_token;
       }
       return token;
     },
     async session({ session, token }) {
+      console.log("Session Callback - Session:", session, "Token:", token);
       session.accessToken = token.accessToken;
       return session;
     },
   },
+  debug: true, // Enable debug messages
   secret: process.env.NEXTAUTH_SECRET,
 };
 

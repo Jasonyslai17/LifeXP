@@ -159,12 +159,13 @@ export function GlobalStateProvider({ children }) {
           try {
             if (!session?.accessToken) {
               console.error("No access token available in session");
-              dispatch({ type: ActionTypes.SET_ERROR, payload: "Authentication error: No access token available" });
-              return;
+              // Instead of dispatching an error, let's try to proceed without the token
+              console.log("Attempting to initialize user without access token");
+            } else {
+              const credential = GoogleAuthProvider.credential(null, session.accessToken);
+              await signInWithCredential(auth, credential);
+              console.log("Signed in to Firebase with credential");
             }
-            const credential = GoogleAuthProvider.credential(null, session.accessToken);
-            await signInWithCredential(auth, credential);
-            console.log("Signed in to Firebase with credential");
           } catch (error) {
             console.error("Error signing in to Firebase:", error);
             dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -172,7 +173,57 @@ export function GlobalStateProvider({ children }) {
           }
         }
         
-        // Rest of the authentication logic...
+        console.log("Initializing user...");
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
+        dispatch({ type: ActionTypes.CLEAR_ERROR });
+  
+        try {
+          // Use the Firebase user UID if available, otherwise fall back to the session user ID
+          const userId = firebaseUser?.uid || session.user.id;
+          const userDocRef = doc(db, 'users', userId);
+          const userDoc = await getDoc(userDocRef);
+  
+          let userData;
+          if (!userDoc.exists()) {
+            console.log("User document doesn't exist, creating new user...");
+            userData = {
+              id: userId,
+              name: session.user.name,
+              email: session.user.email,
+              xp: 0,
+              level: 1,
+              maxXp: getMaxXpForLevel(1),
+              streak: 0,
+              lastUpdated: Timestamp.now()
+            };
+            await setDoc(userDocRef, userData);
+          } else {
+            console.log("User document exists, fetching data...");
+            userData = userDoc.data();
+          }
+  
+          dispatch({ type: ActionTypes.SET_USER, payload: userData });
+  
+          const skillsQuery = query(collection(db, 'skills'), where('userId', '==', userId));
+          const skillsSnapshot = await getDocs(skillsQuery);
+          const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          const questsQuery = query(collection(db, 'quests'), where('userId', '==', userId));
+          const questsSnapshot = await getDocs(questsQuery);
+          const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  
+          dispatch({ 
+            type: ActionTypes.SET_INITIAL_STATE, 
+            payload: { user: userData, skills: skills, quests: quests, loading: false }
+          });
+  
+          console.log("User initialized successfully");
+        } catch (error) {
+          console.error("Error initializing user:", error);
+          dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+        } finally {
+          dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+        }
       } else if (status === "unauthenticated") {
         dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });
       }
