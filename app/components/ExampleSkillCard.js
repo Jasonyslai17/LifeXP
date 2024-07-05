@@ -36,9 +36,9 @@ export default function ExampleSkillCard() {
       <Confetti ref={confettiRef} trigger={triggerConfetti} />
       {/* Rest of the component remains the same */}
       <div className={styles.header}>
-        <span className={styles.icon}>📚</span>
+        <span className={styles.icon}>💻</span>
         <div className={styles.nameAndStreak}>
-          <h3>Example Skill</h3>
+          <h3>Coding</h3>
           <span className={styles.streak}>🔥 {streak} day streak</span>
         </div>
       </div>
