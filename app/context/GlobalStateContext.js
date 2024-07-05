@@ -15,6 +15,7 @@ import {
   where, 
   Timestamp 
 } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from '../firebaseConfig';
 import { calculateLevel, getMaxXpForLevel } from '../utils/levelCalculation';
 
@@ -142,9 +143,26 @@ export function GlobalStateProvider({ children }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
+    console.log("Session status:", status);
+    console.log("Session data:", session);
+
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log("Firebase Auth: User is signed in", user);
+      } else {
+        console.log("Firebase Auth: No user is signed in");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [session, status]);
+
+  useEffect(() => {
     const initializeUser = async () => {
       if (session?.user?.id && status === "authenticated") {
         console.log("Initializing user...");
+        dispatch({ type: ActionTypes.SET_LOADING, payload: true });
         
         const userDocRef = doc(db, 'users', session.user.id);
         
@@ -177,15 +195,23 @@ export function GlobalStateProvider({ children }) {
           const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           console.log("Skills loaded:", skills);
 
-          // Set initial state with both user and skills data
+          // Fetch quests
+          const questsQuery = query(collection(db, 'quests'), where('userId', '==', session.user.id));
+          const questsSnapshot = await getDocs(questsQuery);
+          const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          console.log("Quests loaded:", quests);
+
+          // Set initial state with user, skills, and quests data
           dispatch({ 
-            type: 'SET_INITIAL_STATE', 
-            payload: { user: userData, skills: skills, loading: false }
+            type: ActionTypes.SET_INITIAL_STATE, 
+            payload: { user: userData, skills: skills, quests: quests, loading: false }
           });
 
         } catch (error) {
           console.error("Error initializing user:", error);
-          dispatch({ type: 'SET_ERROR', payload: error.message });
+          dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+        } finally {
+          dispatch({ type: ActionTypes.SET_LOADING, payload: false });
         }
       }
     };
@@ -193,7 +219,9 @@ export function GlobalStateProvider({ children }) {
     initializeUser();
   }, [session, status]);
 
-  console.log("Current state:", state);
+  useEffect(() => {
+    console.log("Current state:", state);
+  }, [state]);
 
   const addSkill = async (newSkill) => {
     try {
@@ -387,6 +415,7 @@ export function GlobalStateProvider({ children }) {
     try {
       await deleteDoc(doc(db, 'skills', skillId));
       dispatch({ type: ActionTypes.REMOVE_SKILL, payload: skillId });
+      console.log(`Skill ${skillId} removed successfully`);
     } catch (error) {
       console.error("Error removing skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -403,6 +432,7 @@ export function GlobalStateProvider({ children }) {
       };
       await setDoc(questRef, questData);
       dispatch({ type: ActionTypes.ADD_QUEST, payload: { id: questRef.id, ...questData } });
+      console.log("New quest added:", { id: questRef.id, ...questData });
     } catch (error) {
       console.error("Error adding quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -414,6 +444,7 @@ export function GlobalStateProvider({ children }) {
       const questRef = doc(db, 'quests', updatedQuest.id);
       await updateDoc(questRef, updatedQuest);
       dispatch({ type: ActionTypes.UPDATE_QUEST, payload: updatedQuest });
+      console.log(`Quest ${updatedQuest.id} updated:`, updatedQuest);
     } catch (error) {
       console.error("Error updating quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -425,6 +456,7 @@ export function GlobalStateProvider({ children }) {
       const questRef = doc(db, 'quests', questId);
       await deleteDoc(questRef);
       dispatch({ type: ActionTypes.REMOVE_QUEST, payload: questId });
+      console.log(`Quest ${questId} removed successfully`);
     } catch (error) {
       console.error("Error removing quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -456,27 +488,30 @@ export function GlobalStateProvider({ children }) {
         type: ActionTypes.COMPLETE_QUEST, 
         payload: { id: questId, xpReward: questData.xpReward } 
       });
+      console.log(`Quest ${questId} completed, user XP updated`);
     } catch (error) {
       console.error("Error completing quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
     }
   };
 
+  const value = {
+    state,
+    dispatch,
+    addSkill,
+    updateSkill,
+    updateSkillXp,
+    updateUserXp,
+    updateUserStreak,
+    removeSkill,
+    addQuest,
+    updateQuest,
+    removeQuest,
+    completeQuest
+  };
+
   return (
-    <GlobalStateContext.Provider value={{ 
-      state, 
-      dispatch, 
-      addSkill, 
-      updateSkill, 
-      updateSkillXp, 
-      updateUserXp,
-      updateUserStreak, 
-      removeSkill,
-      addQuest,
-      updateQuest,
-      removeQuest,
-      completeQuest
-    }}>
+    <GlobalStateContext.Provider value={value}>
       {children}
     </GlobalStateContext.Provider>
   );

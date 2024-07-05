@@ -1,10 +1,19 @@
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
+import Image from 'next/image';
 
 export default function Sidebar() {
   return (
     <nav className={styles.sidebar}>
-      <img src="/LifeXp.png" alt="LifeXP" className={styles.appIcon} />
+       <div className={styles.logoContainer}>
+        <Image 
+          src="/LifeXP.png" 
+          alt="LifeXP Logo" 
+          width={50} 
+          height={50}
+        />
+        <span className={styles.logoText}>LifeXP</span>
+      </div>
       <ul>
         <li>
           <Link href="/">
