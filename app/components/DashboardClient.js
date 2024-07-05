@@ -36,7 +36,7 @@ export default function DashboardClient() {
             <SkillCard key={skill.id} {...skill} />
           ))
         ) : (
-          <div>No skills added yet. Start by adding a new skill!</div>
+          <div></div>
         )}
       </div>
     </>
