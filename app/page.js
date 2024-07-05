@@ -41,7 +41,7 @@ export default function Home() {
             </h1>
             <p className={styles.subheadline}>
             Gamify your personal growth.
-            Grow your skill and make it addictive.
+            Grow your skills and make it addictive.
             </p>
             <Login buttonText="Level up now" classname={styles.loginButton} />
           </div>
