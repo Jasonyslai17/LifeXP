@@ -210,6 +210,27 @@ export function GlobalStateProvider({ children }) {
     }
   };
 
+  const updateSkillXp = async (skillId, hoursToAdd) => {
+    try {
+      const skill = state.skills.find(s => s.id === skillId);
+      if (!skill) {
+        throw new Error("Skill not found");
+      }
+      const newXp = skill.xp + hoursToAdd;
+      const updatedSkill = { ...skill, xp: newXp };
+      
+      dispatch({ 
+        type: ActionTypes.UPDATE_SKILL_XP, 
+        payload: updatedSkill 
+      });
+      console.log(`Skill ${skillId} XP updated:`, updatedSkill);
+    } catch (error) {
+      console.error("Error updating skill XP:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
+    }
+  };
+
   const removeSkill = async (skillId) => {
     try {
       // TODO: Send request to backend API to remove skill
@@ -234,7 +255,8 @@ export function GlobalStateProvider({ children }) {
     addSkill,
     updateSkill,
     removeSkill,
-    clearError
+    clearError,
+    updateSkillXp
     // TODO: Add other methods here
   };
 
