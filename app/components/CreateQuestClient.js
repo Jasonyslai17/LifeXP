@@ -1,4 +1,3 @@
-// components/CreateQuestClient.js
 'use client';
 
 import { useState } from 'react';
@@ -23,12 +22,12 @@ export default function CreateQuestClient() {
   const [description, setDescription] = useState('');
   const [icon, setIcon] = useState('');
   const [difficulty, setDifficulty] = useState('C');
-  const { addQuest } = useGlobalState();
+  const { state, addQuest } = useGlobalState();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!state.user) {
+    if (!state?.user) {
       console.error("User not authenticated");
       return;
     }
@@ -39,7 +38,8 @@ export default function CreateQuestClient() {
       difficulty,
       xpReward: XP_REWARDS[difficulty],
       completed: false,
-      userId: state.user.id
+      userId: state.user.id,
+      createdAt: new Date().toISOString()
     };
     try {
       await addQuest(newQuest);
