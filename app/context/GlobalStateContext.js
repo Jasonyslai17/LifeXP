@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useSession } from "next-auth/react";
+import { db } from '../firebaseConfig';
+import { doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection } from "firebase/firestore";
+import { calculateLevel } from '../utils/levelCalculation';
 
 // Initial state
 const initialState = {
@@ -65,7 +68,6 @@ function reducer(state, action) {
           ...state.user,
           xp: action.payload.newXp,
           level: action.payload.newLevel,
-          maxXp: action.payload.newMaxXp
         }
       };
     case ActionTypes.UPDATE_USER_STREAK:
@@ -130,64 +132,75 @@ export function GlobalStateProvider({ children }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    console.log("Session status:", status);
-    console.log("Session data:", session);
-
     if (status === "authenticated" && session) {
-      console.log("Initializing user...");
-      dispatch({ type: ActionTypes.SET_LOADING, payload: true });
-      dispatch({ type: ActionTypes.CLEAR_ERROR });
-
-      try {
-        // Here we're using the session user data
-        const userData = {
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          // You might want to fetch additional user data from your backend here
-          xp: 0,
-          level: 1,
-          streak: 0,
-          lastUpdated: new Date()
-        };
-
-        dispatch({ type: ActionTypes.SET_USER, payload: userData });
-
-        // TODO: Fetch skills and quests from your backend API
-        // For now, we'll just set empty arrays
-        dispatch({ type: ActionTypes.SET_SKILLS, payload: [] });
-        dispatch({ type: ActionTypes.SET_QUESTS, payload: [] });
-
-        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
-        console.log("User initialized successfully");
-      } catch (error) {
-        console.error("Error initializing user:", error);
-        dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
-        dispatch({ type: ActionTypes.SET_LOADING, payload: false });
-      }
+      initializeUser(session.user);
     } else if (status === "unauthenticated") {
       dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });
     }
   }, [status, session]);
+
+  const initializeUser = async (sessionUser) => {
+    dispatch({ type: ActionTypes.SET_LOADING, payload: true });
+    dispatch({ type: ActionTypes.CLEAR_ERROR });
+
+    try {
+      const userDocRef = doc(db, "users", sessionUser.id);
+      const userDoc = await getDoc(userDocRef);
+
+      let userData;
+      if (userDoc.exists()) {
+        userData = userDoc.data();
+      } else {
+        userData = {
+          id: sessionUser.id,
+          name: sessionUser.name,
+          email: sessionUser.email,
+          xp: 0,
+          level: 1,
+          streak: 0,
+          lastUpdated: new Date().toISOString()
+        };
+        await setDoc(userDocRef, userData);
+      }
+
+      dispatch({ type: ActionTypes.SET_USER, payload: userData });
+
+      // Fetch skills
+      const skillsCollection = collection(db, `users/${sessionUser.id}/skills`);
+      const skillsSnapshot = await getDocs(skillsCollection);
+      const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      dispatch({ type: ActionTypes.SET_SKILLS, payload: skills });
+
+      // Fetch quests
+      const questsCollection = collection(db, `users/${sessionUser.id}/quests`);
+      const questsSnapshot = await getDocs(questsCollection);
+      const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      dispatch({ type: ActionTypes.SET_QUESTS, payload: quests });
+
+      dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+    } catch (error) {
+      console.error("Error initializing user:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+    }
+  };
 
   const addSkill = async (newSkill) => {
     try {
       if (!state.user) {
         throw new Error("User not authenticated");
       }
-      // TODO: Send request to backend API to add skill
-      // For now, we'll just add it to the state
       const skillData = { 
         ...newSkill, 
-        id: Date.now().toString(), // temporary ID
         userId: state.user.id,
         xp: 0,
         level: 1,
         streak: 0,
-        lastUpdated: new Date()
+        lastUpdated: new Date().toISOString()
       };
-      dispatch({ type: ActionTypes.ADD_SKILL, payload: skillData });
-      console.log("New skill added:", skillData);
+      const skillDocRef = doc(collection(db, `users/${state.user.id}/skills`));
+      await setDoc(skillDocRef, skillData);
+      dispatch({ type: ActionTypes.ADD_SKILL, payload: { ...skillData, id: skillDocRef.id } });
     } catch (error) {
       console.error("Error adding skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -197,33 +210,42 @@ export function GlobalStateProvider({ children }) {
 
   const updateSkill = async (skillId, updates) => {
     try {
-      // TODO: Send request to backend API to update skill
-      // For now, we'll just update it in the state
+      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      await updateDoc(skillDocRef, updates);
       dispatch({ 
         type: ActionTypes.UPDATE_SKILL, 
         payload: { id: skillId, ...updates } 
       });
-      console.log(`Skill ${skillId} updated:`, updates);
     } catch (error) {
       console.error("Error updating skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
     }
   };
 
   const updateSkillXp = async (skillId, hoursToAdd) => {
     try {
-      const skill = state.skills.find(s => s.id === skillId);
-      if (!skill) {
+      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      const skillDoc = await getDoc(skillDocRef);
+      if (!skillDoc.exists()) {
         throw new Error("Skill not found");
       }
+      const skill = skillDoc.data();
       const newXp = skill.xp + hoursToAdd;
-      const updatedSkill = { ...skill, xp: newXp };
+      const updatedSkill = { ...skill, xp: newXp, id: skillId };
+      await updateDoc(skillDocRef, updatedSkill);
       
+      dispatch({ type: ActionTypes.UPDATE_SKILL_XP, payload: updatedSkill });
+      
+      // Update user XP
+      const userDocRef = doc(db, "users", state.user.id);
+      const newUserXp = state.user.xp + hoursToAdd;
+      const newUserLevel = calculateLevel(newUserXp);
+      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
       dispatch({ 
-        type: ActionTypes.UPDATE_SKILL_XP, 
-        payload: updatedSkill 
+        type: ActionTypes.UPDATE_USER_XP, 
+        payload: { newXp: newUserXp, newLevel: newUserLevel }
       });
-      console.log(`Skill ${skillId} XP updated:`, updatedSkill);
     } catch (error) {
       console.error("Error updating skill XP:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
@@ -233,17 +255,84 @@ export function GlobalStateProvider({ children }) {
 
   const removeSkill = async (skillId) => {
     try {
-      // TODO: Send request to backend API to remove skill
-      // For now, we'll just remove it from the state
+      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      await deleteDoc(skillDocRef);
       dispatch({ type: ActionTypes.REMOVE_SKILL, payload: skillId });
-      console.log(`Skill ${skillId} removed successfully`);
     } catch (error) {
       console.error("Error removing skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
     }
   };
 
-  // TODO: Implement other methods (addQuest, updateQuest, removeQuest, etc.)
+  const addQuest = async (newQuest) => {
+    try {
+      if (!state.user) {
+        throw new Error("User not authenticated");
+      }
+      const questDocRef = doc(collection(db, `users/${state.user.id}/quests`));
+      await setDoc(questDocRef, newQuest);
+      dispatch({ type: ActionTypes.ADD_QUEST, payload: { ...newQuest, id: questDocRef.id } });
+    } catch (error) {
+      console.error("Error adding quest:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
+    }
+  };
+
+  const updateQuest = async (questId, updates) => {
+    try {
+      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      await updateDoc(questDocRef, updates);
+      dispatch({ 
+        type: ActionTypes.UPDATE_QUEST, 
+        payload: { id: questId, ...updates } 
+      });
+    } catch (error) {
+      console.error("Error updating quest:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
+    }
+  };
+
+  const completeQuest = async (questId) => {
+    try {
+      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      const questDoc = await getDoc(questDocRef);
+      if (!questDoc.exists()) {
+        throw new Error("Quest not found");
+      }
+      const quest = questDoc.data();
+      await updateDoc(questDocRef, { completed: true });
+      
+      // Update user XP
+      const userDocRef = doc(db, "users", state.user.id);
+      const newUserXp = state.user.xp + quest.xpReward;
+      const newUserLevel = calculateLevel(newUserXp);
+      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
+      
+      dispatch({ 
+        type: ActionTypes.COMPLETE_QUEST, 
+        payload: { id: questId, xpReward: quest.xpReward }
+      });
+    } catch (error) {
+      console.error("Error completing quest:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
+    }
+  };
+
+  const removeQuest = async (questId) => {
+    try {
+      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      await deleteDoc(questDocRef);
+      dispatch({ type: ActionTypes.REMOVE_QUEST, payload: questId });
+    } catch (error) {
+      console.error("Error removing quest:", error);
+      dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
+      throw error;
+    }
+  };
 
   const clearError = () => {
     dispatch({ type: ActionTypes.CLEAR_ERROR });
@@ -255,9 +344,12 @@ export function GlobalStateProvider({ children }) {
     addSkill,
     updateSkill,
     removeSkill,
-    clearError,
-    updateSkillXp
-    // TODO: Add other methods here
+    updateSkillXp,
+    addQuest,
+    updateQuest,
+    completeQuest,
+    removeQuest,
+    clearError
   };
 
   return (

@@ -28,6 +28,10 @@ export default function CreateQuestClient() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!state.user) {
+      console.error("User not authenticated");
+      return;
+    }
     const newQuest = {
       title,
       description,
@@ -35,9 +39,15 @@ export default function CreateQuestClient() {
       difficulty,
       xpReward: XP_REWARDS[difficulty],
       completed: false,
+      userId: state.user.id
     };
-    await addQuest(newQuest);
-    router.push('/quests');
+    try {
+      await addQuest(newQuest);
+      router.push('/quests');
+    } catch (error) {
+      console.error("Failed to create quest:", error);
+      // You might want to show an error message to the user here
+    }
   };
 
   return (
