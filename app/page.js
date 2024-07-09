@@ -19,23 +19,34 @@ export default function Home() {
 
   useEffect(() => {
     setIsFirstLoad(false);
+    console.log("First load effect triggered");
   }, []);
 
   useEffect(() => {
+    console.log("Auth state changed:");
     console.log("Page state:", state);
     console.log("Session status:", status);
     console.log("Session data:", session);
-  }, [state, status, session]);
+    console.log("Is first load:", isFirstLoad);
+  }, [state, status, session, isFirstLoad]);
 
   if (status === "loading" || state.loading) {
+    console.log("Rendering loading state");
     return <div className={styles.loading}>Loading...</div>;
   }
 
   if (state.error) {
+    console.log("Rendering error state:", state.error);
     return <div className={styles.error}>Error: {state.error}</div>;
   }
 
+  if (status === "authenticated" && session && !state.user) {
+    console.log("Session is authenticated but state.user is not set");
+    return <div className={styles.loading}>Initializing user data...</div>;
+  }
+
   if (isFirstLoad || status === "unauthenticated" || !state.user) {
+    console.log("Rendering landing page");
     return (
       <div className={styles.landingPage}>
         <Navbar />
@@ -79,6 +90,7 @@ export default function Home() {
   }
 
   if (status === "authenticated" && state.user) {
+    console.log("Rendering authenticated user page");
     return (
       <div className={styles.container}>
         <Login />
@@ -91,5 +103,6 @@ export default function Home() {
     );
   }
 
+  console.log("Rendering unexpected state message");
   return <div className={styles.error}>Unexpected state. Please try logging out and in again.</div>;
 }

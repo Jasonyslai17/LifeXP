@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -11,8 +12,7 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-let app;
-let db;
+let app, db, auth;
 
 if (typeof window !== 'undefined') {
   try {
@@ -26,9 +26,17 @@ if (typeof window !== 'undefined') {
 
     db = getFirestore(app);
     console.log("Firestore instance created successfully");
+
+    auth = getAuth(app);
+    console.log("Auth instance created successfully");
   } catch (error) {
     console.error("Error initializing Firebase:", error);
   }
 }
 
-export { db, app };
+console.log("Firebase config:", {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+});
+
+export { db, auth };

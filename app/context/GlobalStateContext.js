@@ -4,7 +4,10 @@ import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { useSession } from "next-auth/react";
 import { db } from '../firebaseConfig';
 import { doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, collection } from "firebase/firestore";
+import { getAuth, signInAnonymously } from "firebase/auth";
 import { calculateLevel } from '../utils/levelCalculation';
+
+console.log("Firestore instance in GlobalStateContext:", db);
 
 // Initial state
 const initialState = {
@@ -132,9 +135,14 @@ export function GlobalStateProvider({ children }) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (status === "authenticated" && session) {
+    console.log("Full session object:", session);
+    console.log("GlobalStateProvider: Session status changed:", status);
+
+    if (status === "authenticated" && session?.user?.email) {
+      console.log("GlobalStateProvider: Authenticated session detected");
       initializeUser(session.user);
     } else if (status === "unauthenticated") {
+      console.log("GlobalStateProvider: User is not authenticated");
       dispatch({ type: ActionTypes.SET_INITIAL_STATE, payload: { user: null, skills: [], quests: [], loading: false } });
     }
   }, [status, session]);
@@ -144,15 +152,26 @@ export function GlobalStateProvider({ children }) {
     dispatch({ type: ActionTypes.CLEAR_ERROR });
 
     try {
-      const userDocRef = doc(db, "users", sessionUser.id);
+      console.log("Full sessionUser object:", sessionUser);
+      const userId = sessionUser.email; // Use email as a unique identifier
+      console.log("User ID (email) from session:", userId);
+
+      // Sign in anonymously to Firebase
+      const auth = getAuth();
+      await signInAnonymously(auth);
+      console.log("Firebase auth state:", auth.currentUser);
+      
+      const userDocRef = doc(db, "users", userId);
+      console.log("GlobalStateProvider: Attempting to fetch user document");
+      console.log("Attempting to fetch user document for:", userId);
       const userDoc = await getDoc(userDocRef);
+      console.log("User document exists:", userDoc.exists());
 
       let userData;
-      if (userDoc.exists()) {
-        userData = userDoc.data();
-      } else {
+      if (!userDoc.exists()) {
+        console.log("GlobalStateProvider: User document doesn't exist, creating new user data");
         userData = {
-          id: sessionUser.id,
+          id: userId,
           name: sessionUser.name,
           email: sessionUser.email,
           xp: 0,
@@ -161,25 +180,32 @@ export function GlobalStateProvider({ children }) {
           lastUpdated: new Date().toISOString()
         };
         await setDoc(userDocRef, userData);
+      } else {
+        console.log("GlobalStateProvider: User document exists, fetching data");
+        userData = userDoc.data();
       }
 
       dispatch({ type: ActionTypes.SET_USER, payload: userData });
 
-      // Fetch skills
-      const skillsCollection = collection(db, `users/${sessionUser.id}/skills`);
+      console.log("GlobalStateProvider: Fetching skills");
+      const skillsCollection = collection(db, `users/${userId}/skills`);
       const skillsSnapshot = await getDocs(skillsCollection);
       const skills = skillsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       dispatch({ type: ActionTypes.SET_SKILLS, payload: skills });
 
-      // Fetch quests
-      const questsCollection = collection(db, `users/${sessionUser.id}/quests`);
+      console.log("GlobalStateProvider: Fetching quests");
+      const questsCollection = collection(db, `users/${userId}/quests`);
       const questsSnapshot = await getDocs(questsCollection);
       const quests = questsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       dispatch({ type: ActionTypes.SET_QUESTS, payload: quests });
 
       dispatch({ type: ActionTypes.SET_LOADING, payload: false });
+      console.log("GlobalStateProvider: User initialized successfully");
     } catch (error) {
-      console.error("Error initializing user:", error);
+      console.error("GlobalStateProvider: Error initializing user:", error);
+      console.error("GlobalStateProvider: Error details:", error.code, error.message);
+      console.error("GlobalStateProvider: Full error object:", JSON.stringify(error, null, 2));
+      if (error.stack) console.error("Error stack:", error.stack);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       dispatch({ type: ActionTypes.SET_LOADING, payload: false });
     }
@@ -192,17 +218,17 @@ export function GlobalStateProvider({ children }) {
       }
       const skillData = { 
         ...newSkill, 
-        userId: state.user.id,
+        userId: state.user.email,
         xp: 0,
         level: 1,
         streak: 0,
         lastUpdated: new Date().toISOString()
       };
-      const skillDocRef = doc(collection(db, `users/${state.user.id}/skills`));
+      const skillDocRef = doc(collection(db, `users/${state.user.email}/skills`));
       await setDoc(skillDocRef, skillData);
       dispatch({ type: ActionTypes.ADD_SKILL, payload: { ...skillData, id: skillDocRef.id } });
     } catch (error) {
-      console.error("Error adding skill:", error);
+      console.error("GlobalStateProvider: Error adding skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -210,14 +236,14 @@ export function GlobalStateProvider({ children }) {
 
   const updateSkill = async (skillId, updates) => {
     try {
-      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      const skillDocRef = doc(db, `users/${state.user.email}/skills`, skillId);
       await updateDoc(skillDocRef, updates);
       dispatch({ 
         type: ActionTypes.UPDATE_SKILL, 
         payload: { id: skillId, ...updates } 
       });
     } catch (error) {
-      console.error("Error updating skill:", error);
+      console.error("GlobalStateProvider: Error updating skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -225,7 +251,7 @@ export function GlobalStateProvider({ children }) {
 
   const updateSkillXp = async (skillId, hoursToAdd) => {
     try {
-      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      const skillDocRef = doc(db, `users/${state.user.email}/skills`, skillId);
       const skillDoc = await getDoc(skillDocRef);
       if (!skillDoc.exists()) {
         throw new Error("Skill not found");
@@ -238,7 +264,7 @@ export function GlobalStateProvider({ children }) {
       dispatch({ type: ActionTypes.UPDATE_SKILL_XP, payload: updatedSkill });
       
       // Update user XP
-      const userDocRef = doc(db, "users", state.user.id);
+      const userDocRef = doc(db, "users", state.user.email);
       const newUserXp = state.user.xp + hoursToAdd;
       const newUserLevel = calculateLevel(newUserXp);
       await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
@@ -247,7 +273,7 @@ export function GlobalStateProvider({ children }) {
         payload: { newXp: newUserXp, newLevel: newUserLevel }
       });
     } catch (error) {
-      console.error("Error updating skill XP:", error);
+      console.error("GlobalStateProvider: Error updating skill XP:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -255,11 +281,11 @@ export function GlobalStateProvider({ children }) {
 
   const removeSkill = async (skillId) => {
     try {
-      const skillDocRef = doc(db, `users/${state.user.id}/skills`, skillId);
+      const skillDocRef = doc(db, `users/${state.user.email}/skills`, skillId);
       await deleteDoc(skillDocRef);
       dispatch({ type: ActionTypes.REMOVE_SKILL, payload: skillId });
     } catch (error) {
-      console.error("Error removing skill:", error);
+      console.error("GlobalStateProvider: Error removing skill:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -270,11 +296,11 @@ export function GlobalStateProvider({ children }) {
       if (!state.user) {
         throw new Error("User not authenticated");
       }
-      const questDocRef = doc(collection(db, `users/${state.user.id}/quests`));
+      const questDocRef = doc(collection(db, `users/${state.user.email}/quests`));
       await setDoc(questDocRef, newQuest);
       dispatch({ type: ActionTypes.ADD_QUEST, payload: { ...newQuest, id: questDocRef.id } });
     } catch (error) {
-      console.error("Error adding quest:", error);
+      console.error("GlobalStateProvider: Error adding quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -282,14 +308,14 @@ export function GlobalStateProvider({ children }) {
 
   const updateQuest = async (questId, updates) => {
     try {
-      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      const questDocRef = doc(db, `users/${state.user.email}/quests`, questId);
       await updateDoc(questDocRef, updates);
       dispatch({ 
         type: ActionTypes.UPDATE_QUEST, 
         payload: { id: questId, ...updates } 
       });
     } catch (error) {
-      console.error("Error updating quest:", error);
+      console.error("GlobalStateProvider: Error updating quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -297,7 +323,7 @@ export function GlobalStateProvider({ children }) {
 
   const completeQuest = async (questId) => {
     try {
-      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      const questDocRef = doc(db, `users/${state.user.email}/quests`, questId);
       const questDoc = await getDoc(questDocRef);
       if (!questDoc.exists()) {
         throw new Error("Quest not found");
@@ -306,7 +332,7 @@ export function GlobalStateProvider({ children }) {
       await updateDoc(questDocRef, { completed: true });
       
       // Update user XP
-      const userDocRef = doc(db, "users", state.user.id);
+      const userDocRef = doc(db, "users", state.user.email);
       const newUserXp = state.user.xp + quest.xpReward;
       const newUserLevel = calculateLevel(newUserXp);
       await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
@@ -316,7 +342,7 @@ export function GlobalStateProvider({ children }) {
         payload: { id: questId, xpReward: quest.xpReward }
       });
     } catch (error) {
-      console.error("Error completing quest:", error);
+      console.error("GlobalStateProvider: Error completing quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -324,11 +350,11 @@ export function GlobalStateProvider({ children }) {
 
   const removeQuest = async (questId) => {
     try {
-      const questDocRef = doc(db, `users/${state.user.id}/quests`, questId);
+      const questDocRef = doc(db, `users/${state.user.email}/quests`, questId);
       await deleteDoc(questDocRef);
       dispatch({ type: ActionTypes.REMOVE_QUEST, payload: questId });
     } catch (error) {
-      console.error("Error removing quest:", error);
+      console.error("GlobalStateProvider: Error removing quest:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
