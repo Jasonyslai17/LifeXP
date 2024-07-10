@@ -1,4 +1,4 @@
-import { db } from '../../../firebaseConfig';
+import { db } from '../../firebaseConfig';
 import { doc, deleteDoc, collection, getDocs } from "firebase/firestore";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";

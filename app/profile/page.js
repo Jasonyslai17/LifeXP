@@ -5,18 +5,6 @@ import { useGlobalState } from '../context/GlobalStateContext';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import styles from './profile.module.css';
-import { signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 export default function Profile() {
   const router = useRouter();
