@@ -5,17 +5,8 @@ import { useGlobalState } from '../context/GlobalStateContext';
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import styles from './profile.module.css';
-import { Line } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 ChartJS.register(
   CategoryScale,
@@ -43,10 +34,26 @@ export default function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    // Implement account deletion logic here
-    console.log('Account deleted');
-    await signOut({ redirect: false });
-    router.push('/');
+    try {
+      const response = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete account');
+      }
+  
+      console.log('Account deleted');
+      await signOut({ redirect: false });
+      router.push('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      // You might want to show an error message to the user here
+    }
   };
 
   const generateXpData = () => {
