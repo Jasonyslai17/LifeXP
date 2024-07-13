@@ -12,13 +12,33 @@ import styles from './page.module.css';
 import Link from 'next/link';
 import Footer from './components/Footer';
 
+function isInAppBrowser() {
+  if (typeof window === 'undefined') return false; // Server-side check
+  const standaloneMode = window.navigator.standalone;
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const safari = /safari/.test(userAgent);
+  const ios = /iphone|ipod|ipad/.test(userAgent);
+
+  if (ios) {
+    if (!standaloneMode && !safari) {
+      return true;
+    }
+  } else if (userAgent.includes('wv')) {
+    return true;
+  }
+  
+  return false;
+}
+
 export default function Home() {
   const { data: session, status } = useSession();
   const { state } = useGlobalState();
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isInAppBrowserState, setIsInAppBrowserState] = useState(false);
 
   useEffect(() => {
     setIsFirstLoad(false);
+    setIsInAppBrowserState(isInAppBrowser());
     console.log("First load effect triggered");
   }, []);
 
@@ -28,7 +48,8 @@ export default function Home() {
     console.log("Session status:", status);
     console.log("Session data:", session);
     console.log("Is first load:", isFirstLoad);
-  }, [state, status, session, isFirstLoad]);
+    console.log("Is in-app browser:", isInAppBrowserState);
+  }, [state, status, session, isFirstLoad, isInAppBrowserState]);
 
   if (status === "loading" || state.loading) {
     console.log("Rendering loading state");
@@ -51,6 +72,11 @@ export default function Home() {
       <div className={styles.landingPage}>
         <Navbar />
         <main className={styles.mainContent}>
+          {isInAppBrowserState && (
+            <div className={styles.warning}>
+              For the best experience, please open this link in your device's default web browser.
+            </div>
+          )}
           <div className={styles.heroSection}>
             <div className={styles.heroContent}>
               <h1 className={styles.headline}>
@@ -60,7 +86,7 @@ export default function Home() {
                 Gamify your personal growth.
                 Grow your skills and make it addictive.
               </p>
-              <Login buttonText="Level up now" classname={styles.loginButton} />
+              <Login buttonText="Level up now" className={styles.loginButton} isInAppBrowser={isInAppBrowserState} />
             </div>
             <div className={styles.heroDemo}>
               <ExampleSkillCard />

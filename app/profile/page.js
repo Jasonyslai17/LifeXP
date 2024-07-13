@@ -30,9 +30,10 @@ export default function Profile() {
         },
       });
   
+      const data = await response.json();
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete account');
+        throw new Error(data.error || 'Failed to delete account');
       }
   
       console.log('Account deleted');
