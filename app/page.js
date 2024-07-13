@@ -74,7 +74,7 @@ export default function Home() {
         <main className={styles.mainContent}>
           {isInAppBrowserState && (
             <div className={styles.warning}>
-              For the best experience, please open this link in your device&apos;s default web browser.
+              For the best experience, please open this link in your device&apos;s default web browser! 🚀
             </div>
           )}
           <div className={styles.heroSection}>
