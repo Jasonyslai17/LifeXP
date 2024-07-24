@@ -30,15 +30,17 @@ export default function DashboardClient() {
 
   return (
     <>
-      <div className={styles.skillsGrid}>
-        {state.skills && state.skills.length > 0 ? (
-          state.skills.map((skill) => (
-            <SkillCard key={skill.id} {...skill} />
-          ))
-        ) : (
-          <div></div>
-        )}
-      </div>
+      <div className={styles.dashboard}>
+    <div className={styles.skillsGrid}>
+      {state.skills && state.skills.length > 0 ? (
+        state.skills.map((skill) => (
+          <SkillCard key={skill.id} {...skill} />
+        ))
+      ) : (
+        <div></div>
+      )}
+    </div>
+  </div>
     </>
   );
 }

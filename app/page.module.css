@@ -3,6 +3,9 @@
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 4px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .loading {
@@ -93,27 +96,9 @@
 }
 
 @media (max-width: 768px) {
-  .heroSection {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .heroContent {
-    margin-bottom: 40px;
-  }
-
-  .headline {
-    font-size: 36px;
-  }
-
-  .features {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .feature {
-    margin-bottom: 30px;
-    flex-basis: 100%;
+  .container {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 }
 
@@ -121,7 +106,8 @@
 /* Styles for authenticated user */
 .newSkillLink {
   display: block;
-  width: 80%;
+  width: 100%;
+  max-width: 300px;
   margin: 20px auto;
   padding: 15px 20px;
   background-color: #4CAF50;
