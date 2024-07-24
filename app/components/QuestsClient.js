@@ -1,7 +1,7 @@
 // components/QuestsClient.js
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useGlobalState } from '../context/GlobalStateContext';
 import QuestList from './QuestList';
 import UserProfile from './UserProfile';
@@ -14,21 +14,15 @@ const DIFFICULTY_ORDER = ['E', 'D', 'C', 'B', 'A', 'S', 'SS'];
 
 export default function QuestsClient() {
   const { state, completeQuest, removeQuest, updateQuest } = useGlobalState();
-  const [activeQuests, setActiveQuests] = useState([]);
-  const [completedQuests, setCompletedQuests] = useState([]);
   const [showActive, setShowActive] = useState(true);
   const [showXpOrbs, setShowXpOrbs] = useState(false);
   const [completedQuestXp, setCompletedQuestXp] = useState(0);
   const [editingQuest, setEditingQuest] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [sortDirection, setSortDirection] = useState('asc');
   const router = useRouter();
 
-  useEffect(() => {
-    if (state.quests) {
-      setActiveQuests(state.quests.filter(quest => !quest.completed));
-      setCompletedQuests(state.quests.filter(quest => quest.completed));
-    }
-  }, [state.quests]);
+  const activeQuests = useMemo(() => state.quests.filter(quest => !quest.completed), [state.quests]);
+  const completedQuests = useMemo(() => state.quests.filter(quest => quest.completed), [state.quests]);
 
   const sortQuests = useCallback((quests) => {
     return [...quests].sort((a, b) => {
@@ -81,26 +75,23 @@ export default function QuestsClient() {
         />
       )}
       <UserProfile />
-      <h1>Quests</h1>
-      <button onClick={handleCreateQuest} className={styles.createQuestButton}>
-        Create Quest
-      </button>
+      <h1 className={styles.pageTitle}>Quests</h1>
       <div className={styles.toggleContainer}>
         <button 
           onClick={() => setShowActive(true)} 
           className={`${styles.toggleButton} ${showActive ? styles.active : ''}`}
         >
-          Active Quests
+          Active
         </button>
         <button 
           onClick={() => setShowActive(false)} 
           className={`${styles.toggleButton} ${!showActive ? styles.active : ''}`}
         >
-          Completed Quests
+          Completed
         </button>
       </div>
       <button onClick={toggleSortDirection} className={styles.sortButton}>
-        Sort by Difficulty: {sortDirection === 'asc' ? 'Easy to Hard' : 'Hard to Easy'}
+        Sort: {sortDirection === 'asc' ? 'Easy to Hard' : 'Hard to Easy'}
       </button>
       {editingQuest && (
         <QuestForm
@@ -118,6 +109,9 @@ export default function QuestsClient() {
           completed={!showActive}
         />
       </div>
+      <button onClick={handleCreateQuest} className={styles.createQuestButton}>
+        Create Quest
+      </button>
     </div>
   );
 }

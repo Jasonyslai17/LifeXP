@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import Sidebar from './Sidebar';
+import styles from './ClientLayout.module.css';
 
 export default function ClientLayout({ children }) {
   const { data: session, status } = useSession();
@@ -11,9 +12,9 @@ export default function ClientLayout({ children }) {
   }
 
   return (
-    <div className="app-container">
+    <div className={styles.appContainer}>
       {session && <Sidebar />}
-      <main className="main-content">
+      <main className={styles.mainContent}>
         {children}
       </main>
     </div>

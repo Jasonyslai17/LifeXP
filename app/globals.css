@@ -1,14 +1,31 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 body {
     background-color: #f4f5f6;
-    margin: 0;
-    padding: 0;
+    -webkit-text-size-adjust: 100%;
+}
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-color: #f4f5f6;
+  overflow-x: hidden;
 }
 
 .app-container {
-    display: flex;
-    min-height: 100vh;
-    margin: 0;
-    padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  padding: 0;
   }
   
   .main-content {
@@ -18,11 +35,11 @@ body {
   
 @media (max-width: 768px) {
 .app-container {
-    flex-direction: column;
+  padding: 0;
 }
 
 .main-content {
-    padding: 0px;
+    padding: 10px;
 }
 }
 
@@ -85,4 +102,21 @@ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   color: white;
   font-weight: bold;
   z-index: 9999;
+}
+
+@media (max-width: 600px) {
+  .app-container {
+    flex-direction: column;
+  }
+
+  .main-content {
+    padding: 10px;
+  }
+}
+
+/* Prevent zooming on iOS devices */
+@supports (-webkit-overflow-scrolling: touch) {
+  body {
+    touch-action: pan-x pan-y;
+  }
 }

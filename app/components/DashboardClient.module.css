@@ -1,12 +1,19 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .skillsGrid {
-    display: grid;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+@media (min-width: 640px) {
+  .skillsGrid {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
   }
-  
-  @media (max-width: 768px) {
-    .skillsGrid {
-      grid-template-columns: 1fr;
-    }
-  }
+}

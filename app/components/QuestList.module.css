@@ -31,7 +31,7 @@
 
 
 .questIcon {
-    font-size: 1.8rem; /* Increased from 1.5rem */
+    font-size: 1.5rem; /* Increased from 1.5rem */
     margin-right: 15px;
   }
 
@@ -131,7 +131,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px;
+  padding: 0px;
   border-bottom: 1px solid #eee;
   transition: background-color 0.3s ease;
 }
@@ -148,7 +148,7 @@
 
 .questIcon {
   font-size: 2rem;
-  margin-right: 15px;
+  margin-right: 10px;
 }
 
 .questDetails {

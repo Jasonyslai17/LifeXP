@@ -1,38 +1,38 @@
+// components/Sidebar.js
 import Link from 'next/link';
-import styles from './Sidebar.module.css';
 import Image from 'next/image';
+import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
   return (
     <nav className={styles.sidebar}>
-       <div className={styles.logoContainer}>
+      <Link href="/" className={styles.logoContainer}>
         <Image 
           src="/LifeXP.png" 
           alt="LifeXP Logo" 
-          width={50} 
-          height={50}
+          width={40} 
+          height={40}
         />
-        <span className={styles.logoText}>LifeXP</span>
-      </div>
-      <ul>
+      </Link>
+      <ul className={styles.navLinks}>
         <li>
           <Link href="/">
-            <span className={styles.icon}>📊</span> Dashboard
+            Dashboard
           </Link>
         </li>
         <li>
           <Link href="/quests">
-            <span className={styles.icon}>🎯</span> Quests
+            Quests
           </Link>
         </li>
         <li>
           <Link href="/profile">
-            <span className={styles.icon}>👤</span> Profile
+            Profile
           </Link>
         </li>
         <li>
           <a href="https://insigh.to/b/lifexp" className={styles.feedbackLink}>
-            <span className={styles.icon}>💬</span> Feedback?
+            Feedback?
           </a>
         </li>
       </ul>

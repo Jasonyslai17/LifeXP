@@ -1,0 +1,20 @@
+/* components/ClientLayout.module.css */
+.appContainer {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .mainContent {
+    flex-grow: 1;
+    padding: 100px 20px 20px; /* Add top padding to prevent content overlap with Sidebar */
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  @media (max-width: 600px) {
+    .mainContent {
+      padding: 70px 10px 10px;
+    }
+  }

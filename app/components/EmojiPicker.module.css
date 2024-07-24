@@ -1,26 +1,35 @@
+/* components/EmojiPicker.module.css */
 .emojiPicker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    max-width: 600px;
-    margin: 10px 0;
-  }
-  
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 100%;
+  margin: 10px 0;
+}
+
+.emojiButton {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.emojiButton:hover {
+  background-color: #f0f0f0;
+}
+
+.emojiButton.selected {
+  background-color: #e0e0e0;
+  transform: scale(1.1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 600px) {
   .emojiButton {
-    background: none;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 8px;
-    font-size: 24px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 16px;
+    padding: 4px;
   }
-  
-  .emojiButton:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .emojiButton:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
-  }
+}

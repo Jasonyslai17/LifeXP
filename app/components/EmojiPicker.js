@@ -7,14 +7,14 @@ const emojis = [
   '🌟', '🔧', '🎨', '📊', '🌿', '🧪', '🎬', '🏐', '🧗', '🎻', '🏹', '🎲'
 ];
 
-export default function EmojiPicker({ onSelect }) {
+export default function EmojiPicker({ onSelect, selectedEmoji }) {
   return (
     <div className={styles.emojiPicker}>
       {emojis.map((emoji, index) => (
         <button 
           key={index} 
           onClick={() => onSelect(emoji)} 
-          className={styles.emojiButton}
+          className={`${styles.emojiButton} ${selectedEmoji === emoji ? styles.selected : ''}`}
           type="button"
         >
           {emoji}
