@@ -37,6 +37,7 @@ const ActionTypes = {
   COMPLETE_QUEST: 'COMPLETE_QUEST',
   UPDATE_QUEST: 'UPDATE_QUEST',
   REMOVE_QUEST: 'REMOVE_QUEST',
+  LOG_TIME: 'LOG_TIME',
 };
 
 // Reducer function
@@ -71,6 +72,7 @@ function reducer(state, action) {
           ...state.user,
           xp: action.payload.newXp,
           level: action.payload.newLevel,
+          lastUpdated: action.payload.lastUpdated
         }
       };
     case ActionTypes.UPDATE_USER_STREAK:
@@ -106,7 +108,8 @@ function reducer(state, action) {
         user: {
           ...state.user,
           xp: state.user.xp + action.payload.xpReward,
-          level: calculateLevel(state.user.xp + action.payload.xpReward)
+          level: calculateLevel(state.user.xp + action.payload.xpReward),
+          lastUpdated: action.payload.lastUpdated
         }
       };
     case ActionTypes.REMOVE_QUEST:
@@ -120,6 +123,32 @@ function reducer(state, action) {
         quests: state.quests.map(quest => 
           quest.id === action.payload.id ? action.payload : quest
         )
+      };
+    case ActionTypes.LOG_TIME:
+      return {
+        ...state,
+        skills: state.skills.map(skill =>
+          skill.id === action.payload.skillId
+            ? {
+                ...skill,
+                xp: skill.xp + action.payload.hours,
+                logEntries: [
+                  ...(skill.logEntries || []),
+                  {
+                    date: action.payload.lastUpdated,
+                    hours: action.payload.hours,
+                    notes: action.payload.notes
+                  }
+                ]
+              }
+            : skill
+        ),
+        user: {
+          ...state.user,
+          xp: state.user.xp + action.payload.hours,
+          level: calculateLevel(state.user.xp + action.payload.hours),
+          lastUpdated: action.payload.lastUpdated
+        }
       };
     default:
       return state;
@@ -177,12 +206,23 @@ export function GlobalStateProvider({ children }) {
           xp: 0,
           level: 1,
           streak: 0,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
+          profilePicture: sessionUser.image,
+          username: sessionUser.email.split('@')[0] // Create a default username
         };
         await setDoc(userDocRef, userData);
       } else {
         console.log("GlobalStateProvider: User document exists, fetching data");
         userData = userDoc.data();
+        // Update profile picture if it has changed
+        if (userData.profilePicture !== sessionUser.image) {
+          await updateDoc(userDocRef, { 
+            profilePicture: sessionUser.image,
+            lastUpdated: new Date().toISOString()
+          });
+          userData.profilePicture = sessionUser.image;
+          userData.lastUpdated = new Date().toISOString();
+        }
       }
 
       dispatch({ type: ActionTypes.SET_USER, payload: userData });
@@ -222,7 +262,8 @@ export function GlobalStateProvider({ children }) {
         xp: 0,
         level: 1,
         streak: 0,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        logEntries: []
       };
       const skillDocRef = doc(collection(db, `users/${state.user.email}/skills`));
       await setDoc(skillDocRef, skillData);
@@ -249,7 +290,7 @@ export function GlobalStateProvider({ children }) {
     }
   };
 
-  const updateSkillXp = async (skillId, hoursToAdd) => {
+  const updateSkillXp = async (skillId, hours, notes) => {
     try {
       const skillDocRef = doc(db, `users/${state.user.email}/skills`, skillId);
       const skillDoc = await getDoc(skillDocRef);
@@ -257,23 +298,39 @@ export function GlobalStateProvider({ children }) {
         throw new Error("Skill not found");
       }
       const skill = skillDoc.data();
-      const newXp = skill.xp + hoursToAdd;
-      const updatedSkill = { ...skill, xp: newXp, id: skillId };
+      const newXp = skill.xp + hours;
+      const now = new Date().toISOString();
+      const updatedSkill = { 
+        ...skill, 
+        xp: newXp, 
+        lastUpdated: now,
+        logEntries: [
+          ...(skill.logEntries || []),
+          {
+            date: now,
+            hours,
+            notes
+          }
+        ]
+      };
       await updateDoc(skillDocRef, updatedSkill);
       
-      dispatch({ type: ActionTypes.UPDATE_SKILL_XP, payload: updatedSkill });
+      dispatch({ 
+        type: ActionTypes.LOG_TIME, 
+        payload: { skillId, hours, notes, lastUpdated: now }
+      });
       
-      // Update user XP
+      // Update user XP and lastUpdated
       const userDocRef = doc(db, "users", state.user.email);
-      const newUserXp = state.user.xp + hoursToAdd;
+      const newUserXp = state.user.xp + hours;
       const newUserLevel = calculateLevel(newUserXp);
-      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
+      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel, lastUpdated: now });
       dispatch({ 
         type: ActionTypes.UPDATE_USER_XP, 
-        payload: { newXp: newUserXp, newLevel: newUserLevel }
+        payload: { newXp: newUserXp, newLevel: newUserLevel, lastUpdated: now }
       });
     } catch (error) {
-      console.error("GlobalStateProvider: Error updating skill XP:", error);
+      console.error("GlobalStateProvider: Error logging time:", error);
       dispatch({ type: ActionTypes.SET_ERROR, payload: error.message });
       throw error;
     }
@@ -329,17 +386,18 @@ export function GlobalStateProvider({ children }) {
         throw new Error("Quest not found");
       }
       const quest = questDoc.data();
-      await updateDoc(questDocRef, { completed: true });
+      const now = new Date().toISOString();
+      await updateDoc(questDocRef, { completed: true, completedAt: now });
       
-      // Update user XP
+      // Update user XP and lastUpdated
       const userDocRef = doc(db, "users", state.user.email);
       const newUserXp = state.user.xp + quest.xpReward;
       const newUserLevel = calculateLevel(newUserXp);
-      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel });
+      await updateDoc(userDocRef, { xp: newUserXp, level: newUserLevel, lastUpdated: now });
       
       dispatch({ 
         type: ActionTypes.COMPLETE_QUEST, 
-        payload: { id: questId, xpReward: quest.xpReward }
+        payload: { id: questId, xpReward: quest.xpReward, lastUpdated: now }
       });
     } catch (error) {
       console.error("GlobalStateProvider: Error completing quest:", error);

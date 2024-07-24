@@ -17,12 +17,13 @@ const QuestList = React.memo(({ quests, onCompleteQuest, onRemoveQuest, onEditQu
               <div className={styles.questInfo}>
                 <span className={styles.questIcon}>{quest.icon}</span>
                 <div className={styles.questDetails}>
+                  <p>{new Date(quest.createdAt).toLocaleDateString()}</p>
                   <h3>{quest.title}</h3>
                   <p>{quest.description}</p>
                   <span 
                     className={`${styles.questMeta} ${styles[`difficulty-${quest.difficulty}`]}`}
                   >
-                    Difficulty: {quest.difficulty} | XP Reward: {quest.xpReward}
+                    Difficulty: {quest.difficulty} <br></br>
                   </span>
                 </div>
               </div>

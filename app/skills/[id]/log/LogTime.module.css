@@ -1,0 +1,74 @@
+.logTimePage {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .backButton {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+  }
+  
+  .backButton:hover {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+  }
+
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .inputGroup label {
+    font-weight: bold;
+  }
+  
+  .hourInput {
+    padding: 10px;
+    border: 2px solid #4caf50;
+    border-radius: 4px;
+    font-size: 1.2em;
+    width: 100px;
+  }
+  
+  .notesInput {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 100px;
+  }
+  
+  .error {
+    color: red;
+    margin-top: 10px;
+  }
+  
+  .submitButton {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    align-self: flex-start;
+  }
+  
+  .submitButton:hover {
+    background-color: #45a049;
+  }

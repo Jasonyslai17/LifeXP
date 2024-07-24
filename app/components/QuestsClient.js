@@ -1,4 +1,3 @@
-// components/QuestsClient.js
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
@@ -18,7 +17,7 @@ export default function QuestsClient() {
   const [showXpOrbs, setShowXpOrbs] = useState(false);
   const [completedQuestXp, setCompletedQuestXp] = useState(0);
   const [editingQuest, setEditingQuest] = useState(null);
-  const [sortDirection, setSortDirection] = useState('asc');
+  const [sortType, setSortType] = useState('difficulty-asc');
   const router = useRouter();
 
   const activeQuests = useMemo(() => state.quests.filter(quest => !quest.completed), [state.quests]);
@@ -26,11 +25,20 @@ export default function QuestsClient() {
 
   const sortQuests = useCallback((quests) => {
     return [...quests].sort((a, b) => {
-      const indexA = DIFFICULTY_ORDER.indexOf(a.difficulty);
-      const indexB = DIFFICULTY_ORDER.indexOf(b.difficulty);
-      return sortDirection === 'asc' ? indexA - indexB : indexB - indexA;
+      switch (sortType) {
+        case 'difficulty-asc':
+          return DIFFICULTY_ORDER.indexOf(a.difficulty) - DIFFICULTY_ORDER.indexOf(b.difficulty);
+        case 'difficulty-desc':
+          return DIFFICULTY_ORDER.indexOf(b.difficulty) - DIFFICULTY_ORDER.indexOf(a.difficulty);
+        case 'date-asc':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'date-desc':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        default:
+          return 0;
+      }
     });
-  }, [sortDirection]);
+  }, [sortType]);
 
   const sortedActiveQuests = useMemo(() => sortQuests(activeQuests), [activeQuests, sortQuests]);
   const sortedCompletedQuests = useMemo(() => sortQuests(completedQuests), [completedQuests, sortQuests]);
@@ -62,8 +70,16 @@ export default function QuestsClient() {
     router.push('/quests/create');
   }, [router]);
 
-  const toggleSortDirection = useCallback(() => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+  const toggleSort = useCallback(() => {
+    setSortType(prevType => {
+      switch (prevType) {
+        case 'difficulty-asc': return 'difficulty-desc';
+        case 'difficulty-desc': return 'date-asc';
+        case 'date-asc': return 'date-desc';
+        case 'date-desc': return 'difficulty-asc';
+        default: return 'difficulty-asc';
+      }
+    });
   }, []);
 
   return (
@@ -90,8 +106,13 @@ export default function QuestsClient() {
           Completed
         </button>
       </div>
-      <button onClick={toggleSortDirection} className={styles.sortButton}>
-        Sort: {sortDirection === 'asc' ? 'Easy to Hard' : 'Hard to Easy'}
+      <button onClick={toggleSort} className={styles.sortButton}>
+        Sort: {
+          sortType === 'difficulty-asc' ? 'Easy to Hard' :
+          sortType === 'difficulty-desc' ? 'Hard to Easy' :
+          sortType === 'date-asc' ? 'Oldest to Newest' :
+          'Newest to Oldest'
+        }
       </button>
       {editingQuest && (
         <QuestForm

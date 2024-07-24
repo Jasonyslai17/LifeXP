@@ -31,6 +31,9 @@ export default function Sidebar() {
           </Link>
         </li>
         <li>
+          <Link href="/social">Social</Link>
+        </li>
+        <li>
           <a href="https://insigh.to/b/lifexp" className={styles.feedbackLink}>
             Feedback?
           </a>
