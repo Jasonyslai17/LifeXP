@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useGlobalState } from '../../context/GlobalStateContext';
-import EmojiPicker from '../../components/EmojiPicker';
+import { useGlobalState } from '../../../context/GlobalStateContext';
+import EmojiPicker from '../../../components/EmojiPicker';
 import styles from './EditSkill.module.css';
 
 export default function EditSkillPage({ params }) {
