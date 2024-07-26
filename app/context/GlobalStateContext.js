@@ -167,7 +167,9 @@ export function GlobalStateProvider({ children }) {
     console.log("Full session object:", session);
     console.log("GlobalStateProvider: Session status changed:", status);
 
-    if (status === "authenticated" && session?.user?.email) {
+    if (status === "loading") {
+      dispatch({ type: ActionTypes.SET_LOADING, payload: true });
+    } else if (status === "authenticated" && session?.user?.email) {
       console.log("GlobalStateProvider: Authenticated session detected");
       initializeUser(session.user);
     } else if (status === "unauthenticated") {

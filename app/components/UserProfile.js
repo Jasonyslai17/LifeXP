@@ -17,10 +17,6 @@ export default function UserProfile() {
   const [prevLevel, setPrevLevel] = useState(null);
 
   useEffect(() => {
-    console.log("UserProfile state:", state);
-  }, [state]);
-
-  useEffect(() => {
     if (user) {
       const currentLevel = calculateLevel(user.xp);
       if (prevLevel !== null && currentLevel > prevLevel) {
@@ -32,10 +28,10 @@ export default function UserProfile() {
   }, [user, prevLevel]);
 
   if (!user) {
-    return <div>Loading user profile...</div>;
+    return null;
   }
 
-  const { name, xp, streak } = user;
+  const { name, xp } = user;
   const level = calculateLevel(xp);
   const xpInCurrentLevel = getXpInCurrentLevel(xp);
   const xpRequiredForNextLevel = getMaxXpForLevel(level) - getMaxXpForLevel(level - 1);
@@ -44,22 +40,23 @@ export default function UserProfile() {
     <div className={styles.profile}>
       {showConfetti && <Confetti />}
       <div className={styles.header}>
-        <img src={session?.user?.image || '/default-avatar.png'} alt={name} className={styles.avatar} />
-        <div className={styles.nameAndStreak}>
+        <div className={styles.userInfo}>
+          <img src={session?.user?.image || '/default-avatar.png'} alt={name} className={styles.avatar} />
           <h2>{name}</h2>
-          <span className={styles.streak}>🔥 {streak} </span>
+        </div>
+        <div className={styles.levelDisplay}>
+          <span className={styles.levelNumber}>
+            <AnimatedNumber number={level} key={level} />
+          </span>
+          <span className={styles.levelText}>LVL</span>
         </div>
       </div>
-      <div className={styles.levelDisplay}>
-        <span className={styles.level}>Level <AnimatedNumber number={level} key={level} /></span>
-      </div>
       <div className={styles.progressContainer}>
-        <span className={styles.xpCurrent}>{xpInCurrentLevel} XP</span>
         <ProgressBar current={xpInCurrentLevel} max={xpRequiredForNextLevel} />
-        <span className={styles.xpRequired}>{xpRequiredForNextLevel} XP</span>
-      </div>
-      <div className={styles.totalXp}>
-        <span>Total XP: {xp}</span>
+        <div className={styles.xpInfo}>
+          <span className={styles.xpCurrent}>{xpInCurrentLevel} / {xpRequiredForNextLevel} XP</span>
+          <span className={styles.totalXp}>Total XP: {xp}</span>
+        </div>
       </div>
     </div>
   );

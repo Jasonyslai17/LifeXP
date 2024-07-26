@@ -3,6 +3,7 @@ import "./globals.css";
 import { GlobalStateProvider } from './context/GlobalStateContext';
 import SessionProvider from './components/SessionProvider';
 import ClientLayout from './components/ClientLayout'; // We'll create this new component
+import LoadingOverlay from './components/LoadingOverlay'; 
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <SessionProvider>
           <GlobalStateProvider>
+          <LoadingOverlay />
             <ClientLayout>{children}</ClientLayout>
           </GlobalStateProvider>
         </SessionProvider>

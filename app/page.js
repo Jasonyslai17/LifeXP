@@ -51,19 +51,13 @@ export default function Home() {
     console.log("Is in-app browser:", isInAppBrowserState);
   }, [state, status, session, isFirstLoad, isInAppBrowserState]);
 
-  if (status === "loading" || state.loading) {
-    console.log("Rendering loading state");
-    return <div className={styles.loading}>Loading...</div>;
-  }
-
   if (state.error) {
     console.log("Rendering error state:", state.error);
     return <div className={styles.error}>Error: {state.error}</div>;
   }
 
   if (status === "authenticated" && session && !state.user) {
-    console.log("Session is authenticated but state.user is not set");
-    return <div className={styles.loading}>Initializing user data...</div>;
+    return null; // Return null instead of loading text, the LoadingOverlay will handle this
   }
 
   if (isFirstLoad || status === "unauthenticated" || !state.user) {
@@ -124,6 +118,9 @@ export default function Home() {
         <DashboardClient />
         <Link href="/new-skill" className={styles.newSkillLink}>
           Build a New Skill
+        </Link>
+        <Link href="/tutorial" className={styles.tutorialLink}>
+          Tutorial
         </Link>
       </div>
     );

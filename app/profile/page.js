@@ -13,7 +13,7 @@ export default function Profile() {
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   if (!user) {
-    return <div>Loading profile...</div>;
+    return null;
   }
 
   const handleSignOut = async () => {

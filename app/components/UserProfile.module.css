@@ -1,70 +1,87 @@
 .profile {
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  background-color: transparent;
+  border-radius: 15px;
+  padding: 20px;
   margin-bottom: 20px;
 }
+
 .header {
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  margin-bottom: 0px; /* Reduced margin */
+  margin-bottom: 0px;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .avatar {
-  width: 40px; /* Increased size slightly */
-  height: 40px; /* Increased size slightly */
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background-color: #e0e0e0;
-  margin-right: 10px; /* Reduced margin */
+  object-fit: cover;
+  border: 3px solid #f0f4f8;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
 }
 
-.nameAndStreak {
-  display: flex;
-  flex-direction: column;
-}
-
-.nameAndStreak h2 {
-  font-size: 1rem; /* Increased font size slightly */
+.userInfo h2 {
+  font-size: 1.2rem;
   margin: 0;
-}
-
-.streak {
-  font-size: 0.8rem;
-  color: #ff9800;
+  color: #333;
+  text-align: center;
 }
 
 .levelDisplay {
-  text-align: center;
-  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.level {
-  font-size: 1rem; /* Increased font size */
+.levelNumber {
+  font-size: 2.5rem;
   font-weight: bold;
+  color: #4a90e2;
+  line-height: 1;
+}
+
+.levelText {
+  font-size: 1rem;
+  color: #666;
+  text-transform: uppercase;
+  margin-top: 5px;
 }
 
 .progressContainer {
+  background-color: transparent;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 0px;
+}
+
+.xpInfo {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.xpCurrent, .xpRequired {
-  font-size: 0.6rem;
-  width: 40px; /* Reduced width */
-  text-align: center;
-}
-
-.progressContainer .progressBar {
-  flex-grow: 1;
-  margin: 0 5px; /* Reduced margin */
-}
-
-.totalXp {
-  text-align: center; /* Changed to center */
-  font-size: 0.6rem; /* Increased font size slightly */
+  margin-top: 10px;
+  font-size: 0.9rem;
   color: #666;
-  margin-top: 10px; /* Added margin to separate from progress bar */
+}
+
+.xpCurrent, .totalXp {
+  font-weight: 500;
+}
+
+/* Adjust ProgressBar styles if necessary */
+.progressContainer :global(.progressBar) {
+  height: 10px;
+  border-radius: 5px;
+  background-color: #e0e0e0;
+}
+
+.progressContainer :global(.progressBar > div) {
+  background-color: #4a90e2;
+  border-radius: 5px;
 }

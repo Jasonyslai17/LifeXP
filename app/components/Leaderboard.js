@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGlobalState } from '../context/GlobalStateContext';
 import { db } from '../firebaseConfig';
 import { collection, query, orderBy, limit, getDocs, where } from 'firebase/firestore';
@@ -9,16 +9,21 @@ const MEDALS = ['🥇', '🥈', '🥉'];
 
 export default function Leaderboard() {
   const { state } = useGlobalState();
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardData, setLeaderboardData] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timePeriod, setTimePeriod] = useState('All time');
 
   useEffect(() => {
     async function fetchLeaderboard() {
+      if (leaderboardData[timePeriod]) {
+        return; // Data already loaded for this time period
+      }
+
+      setLoading(true);
+      setError(null);
+
       try {
-        setLoading(true);
-        setError(null);
         const usersRef = collection(db, 'users');
         let q = query(usersRef, orderBy('xp', 'desc'), limit(4));
 
@@ -31,13 +36,16 @@ export default function Leaderboard() {
         }
 
         const querySnapshot = await getDocs(q);
-        const leaderboardData = querySnapshot.docs.map(doc => ({
+        const newLeaderboardData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           name: doc.data().name,
           xp: doc.data().xp
         }));
-        console.log(`Leaderboard data for ${timePeriod}:`, leaderboardData);
-        setLeaderboard(leaderboardData);
+
+        setLeaderboardData(prevData => ({
+          ...prevData,
+          [timePeriod]: newLeaderboardData
+        }));
       } catch (err) {
         console.error("Error fetching leaderboard:", err);
         setError("Failed to load leaderboard. Please try again later.");
@@ -49,8 +57,7 @@ export default function Leaderboard() {
     fetchLeaderboard();
   }, [timePeriod]);
 
-  if (loading) return <div>Loading leaderboard...</div>;
-  if (error) return <div>{error}</div>;
+  const currentLeaderboard = leaderboardData[timePeriod] || [];
 
   return (
     <div className={styles.leaderboard}>
@@ -66,19 +73,22 @@ export default function Leaderboard() {
           </button>
         ))}
       </div>
-      {leaderboard.length > 0 ? (
-        <ul className={styles.leaderList}>
-          {leaderboard.map((user, index) => (
-            <li key={user.id} className={styles.leaderboardItem}>
-              <span className={styles.rank}>{MEDALS[index] || index + 1}</span>
-              <span className={styles.name}>{user.name}</span>
-              <span className={styles.xp}>{user.xp} XP</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No data available for this time period.</p>
-      )}
+      <div className={`${styles.leaderboardContent} ${loading ? styles.loading : ''}`}>
+        {currentLeaderboard.length > 0 ? (
+          <ul className={styles.leaderList}>
+            {currentLeaderboard.map((user, index) => (
+              <li key={user.id} className={styles.leaderboardItem}>
+                <span className={styles.rank}>{MEDALS[index] || index + 1}</span>
+                <span className={styles.name}>{user.name}</span>
+                <span className={styles.xp}>{user.xp} XP</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No data available for this time period.</p>
+        )}
+      </div>
+      {error && <div className={styles.error}>{error}</div>}
     </div>
   );
 }

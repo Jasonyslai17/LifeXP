@@ -1,7 +1,5 @@
 .container {
   max-width: 1200px;
-  padding-left: 20px;
-  padding-right: 20px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -98,12 +96,14 @@
   display: block;
 }
 
+
 @media (max-width: 768px) {
   .container {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
+
 
 
 /* Styles for authenticated user */
@@ -149,4 +149,31 @@
   border: 1px solid #ffeeba;
   border-radius: 4px;
   text-align: center;
+}
+.tutorialLink {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 20px auto;
+  padding: 15px 20px;
+  background-color: #3498db;
+  color: white;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tutorialLink:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.tutorialLink:active {
+  transform: translateY(0);
 }

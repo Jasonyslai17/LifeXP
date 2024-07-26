@@ -1,0 +1,89 @@
+.tutorialPage {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .backButton {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    align-self: flex-start;
+  }
+  
+  .backButton:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .slideContainer {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    height: 300px; /* Fixed height for all slides */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto; /* Allow scrolling if content exceeds fixed height */
+  }
+  
+  .slideContainer h2 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .slideContainer p {
+    line-height: 1.8;
+    color: #666;
+    flex-grow: 1; /* Allow paragraph to grow and fill available space */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center content vertically */
+  }
+  
+  .slideContainer br {
+    content: "";
+    margin: 0.5em;
+    display: block;
+    font-size: 24%;
+  }
+  
+  .navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .navButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navButton:hover {
+    background-color: #2980b9;
+  }
+  
+  .slideIndicator {
+    font-size: 1rem;
+    color: #666;
+  }
+  
+  .encouragement {
+    font-style: italic;
+    margin-top: 30px;
+    text-align: center;
+    color: #666;
+  }

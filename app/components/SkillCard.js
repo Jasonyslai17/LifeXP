@@ -74,8 +74,10 @@ export default function SkillCard({ id, name, icon }) {
       <div className={styles.header}>
         <span className={styles.icon}>{icon}</span>
         <div className={styles.nameAndStreak}>
-          <h3>{name}</h3>
-          <span className={styles.streak}>🔥 {streak} </span>
+          <div className={styles.nameStreakWrapper}>
+            <h3>{name}</h3>
+            <span className={styles.streak}>🔥 {streak}</span>
+          </div>
         </div>
       </div>
       <div className={styles.levelDisplay}>
@@ -83,7 +85,9 @@ export default function SkillCard({ id, name, icon }) {
       </div>
       <div className={styles.progressContainer}>
         <span className={styles.xpCurrent}>{xpForCurrentLevel} XP</span>
-        <ProgressBar current={xp - xpForCurrentLevel} max={xpRequiredForNextLevel - xpForCurrentLevel} />
+        <div className={styles.progressBarWrapper}>
+          <ProgressBar current={xp - xpForCurrentLevel} max={xpRequiredForNextLevel - xpForCurrentLevel} />
+        </div>
         <span className={styles.xpRequired}>{xpRequiredForNextLevel} XP</span>
       </div>
       <div className={styles.footer}>
@@ -91,7 +95,7 @@ export default function SkillCard({ id, name, icon }) {
           variant="secondary" 
           onClick={handleAddTime}
         >
-          +
+          + session
         </Button>
       </div>
     </div>
