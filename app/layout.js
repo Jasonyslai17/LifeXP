@@ -4,6 +4,10 @@ import { GlobalStateProvider } from './context/GlobalStateContext';
 import SessionProvider from './components/SessionProvider';
 import ClientLayout from './components/ClientLayout'; // We'll create this new component
 import LoadingOverlay from './components/LoadingOverlay'; 
+import dynamic from 'next/dynamic';
+
+
+const GoogleAnalytics = dynamic(() => import('./components/GoogleAnalytics'), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,6 +41,9 @@ export default function RootLayout({ children }) {
             <ClientLayout>{children}</ClientLayout>
           </GlobalStateProvider>
         </SessionProvider>
+        {process.env.NODE_ENV === 'production' && (
+          <GoogleAnalytics measurementId="G-J5T8N6VTBE" />
+        )}
       </body>
     </html>
   );
